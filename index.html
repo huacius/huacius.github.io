@@ -931,7 +931,8 @@ class MovieEnglishApp {
 
     await this._restoreProgressForFile(this.currentFileName);
 
-    this.renderStudy();
+    this.renderStudy({ autoScroll: true });
+
     this._syncControls();
     this._syncRestartVisibility();
 
