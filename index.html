@@ -19,8 +19,10 @@
     .container {
       max-width: 720px;
       margin: 0 auto;
-      padding: 16px 16px calc(var(--bar-h) + 90px);
       box-sizing: border-box;
+    }
+    #app {
+      padding-bottom: calc(var(--bar-h) + 90px);  /* 留白放到 app 里 */
     }
 
     .page-title {
@@ -342,7 +344,7 @@
 
 <body tabindex="-1">
   <div class="container">
-    <div class="page-title">Learn English by Watching Movies16</div>
+    <div class="page-title">Learn English by Watching Movies</div>
 
     <div class="topbar">
       <div id="fileBox">
@@ -1568,8 +1570,7 @@ class MovieEnglishApp {
       // 命中 data-action 后，结束
       return;
     }
-    alert(1);
-    alert(this.view);
+
     if (this.view === "study") {
       // 排除强交互元素
       if (
