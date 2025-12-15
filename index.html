@@ -47,37 +47,37 @@
       scroll-margin-bottom: calc(var(--bar-h) + 16px);
     }
 
-    /* Highlight flash + underline (for jump from Highlights) */
-    .sentence.flash {
-      animation: flash-bg 1.2s ease-in-out 0s 2;
+    /* Flash background (temporary) */
+    .sentence.flash-bg {
+      animation: flash-bg 1s ease-in-out 0s 1;
       padding: 8px;
       margin-left: -8px;
       margin-right: -8px;
       border-radius: 10px;
     }
     
-    /* underline only for English sentence line */
-    .sentence.flash .en {
-      text-decoration-line: underline;
-      text-decoration-thickness: 0.75px;
-      text-decoration-color: #22c55e;
-      text-underline-offset: 4px;
-    }
-
+    /* Permanent underline for located sentence */
     .sentence.marked .en {
-      text-decoration-skip-ink: auto;
+      text-decoration-line: underline;
+      text-decoration-thickness: 1px;          /* 👈 比之前更细 */
+      text-decoration-color: #22c55e;
+      text-underline-offset: 5px;              /* 稍微靠近文字 */
     }
-
+    
     @keyframes flash-bg {
       0% {
         background: rgba(34,197,94,0.00);
       }
       50% {
-        background: rgba(34,197,94,0.18);
+        background: rgba(34,197,94,0.16);
       }
       100% {
         background: rgba(34,197,94,0.00);
       }
+    }
+
+    .sentence.marked .en {
+      text-decoration-skip-ink: auto;
     }
 
     .en {
@@ -1602,15 +1602,16 @@ class MovieEnglishApp {
     setTimeout(() => {
       const el = document.getElementById(`sent-${targetIdx}`);
       if (!el) return;
-    
-      el.classList.add("flash");
-    
-      // 自动移除，避免残留
-      setTimeout(() => {
-        el.classList.remove("flash");
-      }, 2400);
-    }, 120);
 
+      // 永久标记（下划线）
+      el.classList.add("marked");
+
+      // 临时闪背景
+      el.classList.add("flash-bg");
+      setTimeout(() => {
+        el.classList.remove("flash-bg");
+      }, 1100); 
+    }, 120);
     
     this._syncControls();
     document.body.focus();
