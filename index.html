@@ -1117,6 +1117,7 @@ class MovieEnglishApp {
       this.renderStudy();
       this._syncControls();
       this._syncRestartVisibility();
+      this.renderStudy({ autoScroll: true });
       return true;
     }
 
@@ -1171,7 +1172,7 @@ class MovieEnglishApp {
     document.body.focus();
   }
 
-  renderStudy({ scrollToIdx = null } = {}) {
+  renderStudy({ scrollToIdx = null, autoScroll = false } = {}) {
     this.appEl.innerHTML = "";
 
     const shown = this.sentences.slice(0, this.cursor + 1);
@@ -1243,9 +1244,10 @@ class MovieEnglishApp {
       targetEl = document.getElementById(`sent-${shown[shown.length - 1].idx}`);
     }
 
-    if (targetEl) {
+    if (autoScroll && targetEl) {
       this._scrollSentenceFullyVisible(targetEl);
     }
+
   }
 
   _scrollSentenceFullyVisible(el) {
@@ -1598,7 +1600,10 @@ class MovieEnglishApp {
     }
 
     await this.setView("study");
-    this.renderStudy({ scrollToIdx: targetIdx });
+    this.renderStudy({
+      scrollToIdx: targetIdx,
+      autoScroll: true
+    });
 
     setTimeout(() => {
       const el = document.getElementById(`sent-${targetIdx}`);
