@@ -47,6 +47,35 @@
       scroll-margin-bottom: calc(var(--bar-h) + 16px);
     }
 
+    /* Highlight flash + underline (for jump from Highlights) */
+    .sentence.flash {
+      animation: flash-bg 1.2s ease-in-out 0s 2;
+      padding: 8px;
+      margin-left: -8px;
+      margin-right: -8px;
+      border-radius: 10px;
+    }
+    
+    /* underline only for English sentence line */
+    .sentence.flash .en {
+      text-decoration-line: underline;
+      text-decoration-thickness: 2px;
+      text-decoration-color: #22c55e;
+      text-underline-offset: 6px;
+    }
+    
+    @keyframes flash-bg {
+      0% {
+        background: rgba(34,197,94,0.00);
+      }
+      50% {
+        background: rgba(34,197,94,0.18);
+      }
+      100% {
+        background: rgba(34,197,94,0.00);
+      }
+    }
+
     .en {
       font-size: 18px;
       line-height: 1.6;
@@ -1565,6 +1594,20 @@ class MovieEnglishApp {
 
     await this.setView("study");
     this.renderStudy({ scrollToIdx: targetIdx });
+
+    setTimeout(() => {
+      const el = document.getElementById(`sent-${targetIdx}`);
+      if (!el) return;
+    
+      el.classList.add("flash");
+    
+      // 自动移除，避免残留
+      setTimeout(() => {
+        el.classList.remove("flash");
+      }, 2400);
+    }, 120);
+
+    
     this._syncControls();
     document.body.focus();
   }
