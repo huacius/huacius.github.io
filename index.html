@@ -6,11 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
-    :root { --bar-h: 76px; }
+    :root { --bar-h: 96px; }
 
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       background: #0f172a;
       color: #e5e7eb;
     }
@@ -20,6 +20,7 @@
       max-width: 720px;
       margin: 0 auto;
       padding: 16px 16px calc(var(--bar-h) + 90px);
+      box-sizing: border-box;
     }
 
     .page-title {
@@ -44,19 +45,6 @@
     .sentence {
       margin-bottom: 22px;
       scroll-margin-bottom: calc(var(--bar-h) + 16px);
-      border-radius: 12px;
-    }
-    .sentence.flash {
-      animation: flash 1.1s ease-in-out 0s 2;
-      padding: 8px;
-      margin-left: -8px;
-      margin-right: -8px;
-      background: rgba(34,197,94,0.10);
-    }
-    @keyframes flash {
-      0% { background: rgba(34,197,94,0.00); }
-      50% { background: rgba(34,197,94,0.16); }
-      100% { background: rgba(34,197,94,0.00); }
     }
 
     .en {
@@ -76,58 +64,63 @@
       margin-top: 6px;
       font-size: 15px;
       color: #9ca3af;
-      white-space: pre-line;
+      line-height: 1.45;
+      word-break: break-word;
+      white-space: pre-wrap;
     }
 
     .star {
       cursor: pointer;
       font-size: 18px;
-      margin-left: 8px;
+      margin-left: 0;
       user-select: none;
     }
 
-    /* Bottom bar (stable height) */
+    .speaker-inline {
+      cursor: pointer;
+      user-select: none;
+      font-size: 16px;
+      opacity: 0.95;
+    }
+    .speaker-inline:hover { opacity: 1; }
+
+    /* Bottom bar (always 2 rows; stable height) */
     .controls {
       position: fixed;
       bottom: 0; left: 0; right: 0;
       background: #020617;
-      padding: 12px;
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      gap: 12px;
-      min-height: var(--bar-h);
+      padding: 10px 12px;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: var(--bar-h);
+      z-index: 50;
     }
 
-    .controls-left {
-      justify-self: start;
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 34px;
+    }
+
+    .nav-row {
       display: flex;
       gap: 14px;
       align-items: center;
       font-size: 14px;
       color: #cbd5f5;
 
-      /* prevent wrapping to keep bar height stable */
+      /* keep bar height stable */
       flex-wrap: nowrap;
       white-space: nowrap;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
     }
-    .controls-left::-webkit-scrollbar { display: none; }
-
-    .controls-center { justify-self: center; }
-
-    .controls-right {
-      justify-self: end;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      font-size: 14px;
-      color: #cbd5f5;
-      white-space: nowrap;
-    }
+    .nav-row::-webkit-scrollbar { display: none; }
 
     .nav {
       cursor: pointer;
@@ -135,6 +128,39 @@
       opacity: 0.95;
     }
     .nav:hover { opacity: 1; }
+
+    .icon-btn {
+      border: 1px solid #334155;
+      background: transparent;
+      color: #cbd5f5;
+      border-radius: 999px;
+      width: 36px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      flex: 0 0 auto;
+    }
+    .icon-btn:hover { border-color: #475569; }
+
+    .chk-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 14px;
+      color: #cbd5f5;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .chk {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
 
     .next-btn {
       padding: 12px 40px;
@@ -144,6 +170,7 @@
       background: #22c55e;
       color: #022c22;
       cursor: pointer;
+      flex: 0 0 auto;
     }
     .next-btn:disabled {
       background: #334155;
@@ -151,19 +178,11 @@
       cursor: not-allowed;
     }
 
-    /* Next placeholder (keep layout stable) */
-    .hidden-but-keeps-space { visibility: hidden; }
-
-    .ghost-btn {
-      padding: 10px 12px;
-      font-size: 14px;
-      border-radius: 999px;
-      border: 1px solid #334155;
-      background: transparent;
-      color: #cbd5f5;
-      cursor: pointer;
+    /* Keep layout space while visually hidden */
+    .hidden-but-keeps-space {
+      visibility: hidden !important;
+      pointer-events: none !important;
     }
-    .ghost-btn:hover { border-color: #475569; }
 
     /* Popover */
     .popover {
@@ -176,6 +195,7 @@
       display: none;
       max-width: 320px;
       width: fit-content;
+      box-sizing: border-box;
     }
 
     .popover h4 {
@@ -187,7 +207,7 @@
     .ipa-line {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px; /* close to "one space" feeling */
       margin-bottom: 8px;
       color: #9ca3af;
       font-size: 14px;
@@ -205,10 +225,10 @@
     .cn-def {
       font-size: 14px;
       color: #cbd5f5;
-      line-height: 1.45;
+      line-height: 1.4;
       word-break: break-word;
-      white-space: normal;
     }
+    .cn-item { margin: 3px 0; }
 
     .loading { font-size: 13px; color: #9ca3af; }
 
@@ -260,9 +280,14 @@
     }
     .small-btn:hover { border-color: #475569; }
 
-    .list-item { margin-bottom: 12px; }
-    .list-item.clickable { cursor: pointer; }
-    .list-item.clickable:hover { opacity: 0.98; }
+    .list-item {
+      margin-bottom: 12px;
+      cursor: default;
+    }
+
+    .clickable {
+      cursor: pointer;
+    }
 
     .meta {
       font-size: 12px;
@@ -270,7 +295,7 @@
       margin-top: 4px;
     }
 
-    /* hide file input in non-study view */
+    /* Hide file input in non-study view */
     .hidden { display: none !important; }
   </style>
 </head>
@@ -289,24 +314,29 @@
     <div id="app"></div>
   </div>
 
+  <!-- Bottom controls: always 2 rows -->
   <div class="controls" id="controlsBar">
-    <div class="controls-left">
-      <label>
-        <input type="checkbox" checked id="toggleCN" />
-        Show Chinese
-      </label>
-      <span class="nav" id="navStudy">🏠 Study</span>
-      <span class="nav" id="navVocab">📘 Vocabulary</span>
-      <span class="nav" id="navHighlights">💬 Highlights</span>
+    <div class="controls-row">
+      <div class="nav-row">
+        <span class="nav" id="navStudy">🏠 Study</span>
+        <span class="nav" id="navVocab">📘 Vocabulary</span>
+        <span class="nav" id="navHighlights">💬 Highlights</span>
+      </div>
+      <button class="icon-btn" id="restartBtn" title="Restart" aria-label="Restart">⟲</button>
     </div>
 
-    <div class="controls-center">
+    <div class="controls-row">
+      <div class="chk-row">
+        <label class="chk">
+          <input type="checkbox" checked id="toggleCN" />
+          Show Chinese
+        </label>
+        <label class="chk">
+          <input type="checkbox" id="toggleAuto" />
+          Auto
+        </label>
+      </div>
       <button class="next-btn" id="nextBtn" disabled>Next</button>
-    </div>
-
-    <div class="controls-right">
-      <!-- subtle restart icon + tooltip -->
-      <button class="ghost-btn" id="restartBtn" style="display:none;" title="Restart">↺</button>
     </div>
   </div>
 
@@ -314,7 +344,7 @@
 
 <script>
 /* =========================
-   Storage: IndexedDB (promise wrapper)
+   IndexedDB (Promise wrapper)
    ========================= */
 
 class IDBStore {
@@ -375,7 +405,7 @@ class IDBStore {
     return this.db;
   }
 
-  _store(storeName, mode="readonly") {
+  _store(storeName, mode = "readonly") {
     const tx = this.db.transaction(storeName, mode);
     return tx.objectStore(storeName);
   }
@@ -416,37 +446,123 @@ class IDBStore {
     });
   }
 
-  async getAllByIndex(storeName, indexName, indexValue) {
-    await this.init();
-    return new Promise((resolve, reject) => {
-      const store = this._store(storeName, "readonly");
-      const idx = store.index(indexName);
-      const req = idx.getAll(indexValue);
-      req.onsuccess = () => resolve(req.result || []);
-      req.onerror = () => reject(req.error);
-    });
-  }
-
   async bulkDelete(storeName, keys) {
     await this.init();
     if (!keys || keys.length === 0) return true;
+
     return new Promise((resolve, reject) => {
       const store = this._store(storeName, "readwrite");
       let i = 0;
+
       const next = () => {
         if (i >= keys.length) return resolve(true);
         const req = store.delete(keys[i++]);
         req.onsuccess = next;
         req.onerror = () => reject(req.error);
       };
+
       next();
     });
   }
 }
 
 /* =========================
-   Dictionary: US only + CN only (NO CACHE, NO local override dict)
-   - CN: show multiple candidates (from MyMemory response + matches)
+   Sentence TTS (English only)
+   ========================= */
+
+class SentenceSpeaker {
+  constructor() {
+    this.synth = window.speechSynthesis || null;
+    this.voice = null;
+    this.voicesReady = false;
+
+    if (this.synth) {
+      const tryLoad = () => {
+        const voices = this.synth.getVoices();
+        if (voices && voices.length) {
+          this.voicesReady = true;
+          this.voice = this._pickUSVoice(voices);
+        }
+      };
+
+      tryLoad();
+      this.synth.onvoiceschanged = () => {
+        this.voicesReady = true;
+        this.voice = this._pickUSVoice(this.synth.getVoices());
+      };
+    }
+  }
+
+  _pickUSVoice(voices) {
+    if (!Array.isArray(voices) || voices.length === 0) return null;
+
+    const us = voices.filter(v => String(v.lang || "").toLowerCase().startsWith("en-us"));
+    if (us.length === 0) return voices.find(v => String(v.lang || "").toLowerCase().startsWith("en")) || null;
+
+    // Prefer common US voices if present
+    const preferred = us.find(v => /google us english/i.test(v.name || "")) ||
+                      us.find(v => /united states/i.test(v.name || "")) ||
+                      us[0];
+    return preferred || us[0] || null;
+  }
+
+  stop() {
+    if (!this.synth) return;
+    try { this.synth.cancel(); } catch {}
+  }
+
+  speak(text) {
+    const t = String(text || "").trim();
+    if (!t || !this.synth) return Promise.resolve(false);
+
+    this.stop();
+
+    return new Promise((resolve) => {
+      const utter = new SpeechSynthesisUtterance(t);
+      utter.lang = "en-US";
+      if (this.voice) utter.voice = this.voice;
+
+      // Keep default rate/pitch (stable across devices)
+      utter.rate = 1;
+      utter.pitch = 1;
+
+      let done = false;
+
+      // Safety timeout (avoid rare cases where onend never fires)
+      const maxMs = Math.min(60000, Math.max(12000, t.length * 140));
+      const timer = setTimeout(() => {
+        if (done) return;
+        done = true;
+        this.stop();
+        resolve(false);
+      }, maxMs);
+
+      utter.onend = () => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        resolve(true);
+      };
+
+      utter.onerror = () => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        resolve(false);
+      };
+
+      try {
+        this.synth.speak(utter);
+      } catch {
+        clearTimeout(timer);
+        resolve(false);
+      }
+    });
+  }
+}
+
+/* =========================
+   Dictionary: US IPA + US audio + Chinese meanings (no caching)
    ========================= */
 
 class DictionaryService {
@@ -458,47 +574,72 @@ class DictionaryService {
     return String(word || "").trim().toLowerCase();
   }
 
-  playAudio(url) {
-    if (!url) return false;
-    this.audioPlayer.src = url;
-    this.audioPlayer.play();
-    return true;
-  }
-
   async lookup(word) {
     const w = this.normalize(word);
     if (!w) return null;
 
-    const [phon, zhList] = await Promise.all([
-      this._fetchUSPhonetics(w),
-      this._fetchChineseList(w)
-    ]);
+    const dict = await this._fetchDictionaryEntry(w);
+    const zhList = await this._fetchChineseList(w, dict.definitions);
 
-    const zhText = (zhList && zhList.length) ? zhList.join("；") : "";
-    return { ipaUS: phon.ipaUS, audioUS: phon.audioUS, zhList: zhList || [], zh: zhText };
+    return {
+      ipaUS: dict.ipaUS || "",
+      audioUS: dict.audioUS || "",
+      zhList
+    };
   }
 
-  async _fetchUSPhonetics(wordLower) {
-    const out = { ipaUS: "", audioUS: "" };
+  async playUS(word) {
+    const w = this.normalize(word);
+    if (!w) return false;
+
+    const data = await this.lookup(w);
+    if (!data?.audioUS) return false;
+
+    try {
+      this.audioPlayer.src = data.audioUS;
+      await this.audioPlayer.play();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async _fetchDictionaryEntry(wordLower) {
+    const out = { ipaUS: "", audioUS: "", definitions: [] };
+
     try {
       const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(wordLower)}`);
       const json = await res.json();
       if (!Array.isArray(json)) return out;
 
       const phonetics = [];
+      const defs = [];
+
       for (const entry of json) {
-        if (Array.isArray(entry.phonetics)) {
+        if (Array.isArray(entry?.phonetics)) {
           for (const p of entry.phonetics) {
-            phonetics.push({ text: p.text || "", audio: p.audio || "" });
+            phonetics.push({ text: p?.text || "", audio: p?.audio || "" });
+          }
+        }
+
+        if (Array.isArray(entry?.meanings)) {
+          for (const m of entry.meanings) {
+            if (Array.isArray(m?.definitions)) {
+              for (const d of m.definitions) {
+                const def = String(d?.definition || "").trim();
+                if (def) defs.push(def);
+              }
+            }
           }
         }
       }
 
       const isUsAudio = (url) => {
-        const u = (url || "").toLowerCase();
+        const u = String(url || "").toLowerCase();
         return u.includes("-us.mp3") || u.endsWith("us.mp3") || u.includes("en-us");
       };
 
+      // Prefer US audio + matching IPA
       for (const p of phonetics) {
         if (p.audio && isUsAudio(p.audio)) {
           if (!out.audioUS) out.audioUS = p.audio;
@@ -508,48 +649,85 @@ class DictionaryService {
       }
 
       if (!out.ipaUS) out.ipaUS = phonetics.find(p => p.text)?.text || "";
+      out.definitions = defs;
+
       return out;
     } catch {
       return out;
     }
   }
 
-  async _fetchChineseList(wordLower) {
-    const isChinese = (s) => /[\u4e00-\u9fff]/.test(s);
+  async _fetchChineseList(wordLower, englishDefinitions) {
+    const zhSet = new Set();
 
-    const dedup = [];
-    const seen = new Set();
-
-    const add = (t) => {
-      if (t === null || t === undefined) return;
-      let s = String(t).trim();
-      if (!s) return;
-      if (s.toLowerCase() === wordLower) return;
-      // Keep only likely Chinese outputs
-      if (!isChinese(s)) return;
-      // Normalize
-      s = s.replace(/\s+/g, " ").trim();
-      if (!s) return;
-      if (seen.has(s)) return;
-      seen.add(s);
-      dedup.push(s);
+    const add = (s) => {
+      const t = String(s || "").trim();
+      if (!t) return;
+      zhSet.add(t);
     };
 
+    // Translate the word itself
+    add(await this._translateToZh(wordLower));
+
+    // Translate a few dictionary definitions to get richer CN meanings
+    const defs = Array.isArray(englishDefinitions) ? englishDefinitions : [];
+    const picked = [];
+    const seen = new Set();
+
+    for (const d of defs) {
+      const x = String(d || "").trim();
+      if (!x) continue;
+      if (seen.has(x)) continue;
+      seen.add(x);
+      picked.push(x);
+      if (picked.length >= 5) break;
+    }
+
+    for (const d of picked) {
+      add(await this._translateToZh(d));
+    }
+
+    return Array.from(zhSet);
+  }
+
+  async _translateToZh(textEn) {
+    const q = String(textEn || "").trim();
+    if (!q) return "";
+
     try {
-      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(wordLower)}&langpair=en|zh-CN`;
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=en|zh-CN`;
       const res = await fetch(url);
       const json = await res.json();
 
-      add(json?.responseData?.translatedText);
+      // Main translation
+      const main = String(json?.responseData?.translatedText || "").trim();
+      const out = [];
 
-      const matches = Array.isArray(json?.matches) ? json.matches.slice() : [];
-      matches.sort((a, b) => (Number(b.match || 0) - Number(a.match || 0)));
+      if (main && main.toLowerCase() !== q.toLowerCase()) out.push(main);
 
-      for (const m of matches) add(m?.translation);
+      // Additional candidates (often multiple senses)
+      const matches = Array.isArray(json?.matches) ? json.matches : [];
+      for (const m of matches) {
+        const t = String(m?.translation || "").trim();
+        if (!t) continue;
+        if (t.toLowerCase() === q.toLowerCase()) continue;
+        out.push(t);
+        if (out.length >= 6) break;
+      }
 
-      return dedup;
+      // Deduplicate while preserving order
+      const seen = new Set();
+      const unique = [];
+      for (const t of out) {
+        if (seen.has(t)) continue;
+        seen.add(t);
+        unique.push(t);
+      }
+
+      // Return as a single joined string for this call (caller dedups across calls)
+      return unique.join("；");
     } catch {
-      return [];
+      return "";
     }
   }
 }
@@ -562,6 +740,7 @@ class MovieEnglishApp {
   constructor() {
     this.db = new IDBStore("learn-english-db", 3);
     this.dict = new DictionaryService();
+    this.speaker = new SentenceSpeaker();
 
     // UI refs
     this.appEl = document.getElementById("app");
@@ -572,6 +751,7 @@ class MovieEnglishApp {
     this.fileInputEl = document.getElementById("fileInput");
 
     this.toggleCNEl = document.getElementById("toggleCN");
+    this.toggleAutoEl = document.getElementById("toggleAuto");
     this.nextBtnEl = document.getElementById("nextBtn");
     this.restartBtnEl = document.getElementById("restartBtn");
 
@@ -584,54 +764,66 @@ class MovieEnglishApp {
     // runtime state
     this.view = "study";
     this.showCN = true;
+    this.autoMode = false;
 
     this.currentFileName = null;
     this.sentences = []; // [{ idx, en, cn }]
     this.cursor = -1;
     this.isFinished = false;
 
-    // favorites in memory
-    this.favoriteWords = new Set();         // wordLower
-    this.favoriteSentenceIds = new Set();   // `${fileName}::${idx}`
+    // favorites
+    this.favoriteWords = new Set();       // wordLower
+    this.favoriteSentenceIds = new Set(); // all sentence ids across files
 
     // popover state
     this.currentPopoverWord = null;
     this.currentPopoverData = null;
 
-    // TTS state
-    this.currentSpeakingIdx = null;
+    // auto playback token (for cancellation)
+    this.autoToken = 0;
   }
 
   async init() {
     await this.db.init();
 
-    // keep bar height variable accurate
+    // Keep bar height variable accurate
     this._syncBarHeightVar();
     window.addEventListener("resize", () => this._syncBarHeightVar());
 
-    // load prefs
+    // Load prefs
     const showCNMeta = await this.db.get("meta", "showCN");
     if (showCNMeta && typeof showCNMeta.value === "boolean") {
       this.showCN = showCNMeta.value;
       this.toggleCNEl.checked = this.showCN;
     }
 
-    // favorites
-    await this._loadFavoriteWords();
+    const autoMeta = await this.db.get("meta", "autoMode");
+    if (autoMeta && typeof autoMeta.value === "boolean") {
+      this.autoMode = autoMeta.value;
+      this.toggleAutoEl.checked = this.autoMode;
+    }
 
-    // hint
+    // Load favorites
+    await this._loadFavoriteWords();
+    await this._loadFavoriteSentencesAll();
+
+    // Hint
     await this._renderLastSessionHint();
 
-    // bind UI
+    // Bind UI
     this._bindUI();
     this._bindGlobal();
 
-    // focus
+    // Focus
     window.addEventListener("load", () => document.body.focus());
+
+    // Initial controls
+    this._syncControls();
+    this._syncRestartVisibility();
   }
 
   _syncBarHeightVar() {
-    const h = Math.max(72, this.controlsBar.getBoundingClientRect().height);
+    const h = Math.max(88, this.controlsBar.getBoundingClientRect().height);
     document.documentElement.style.setProperty("--bar-h", `${Math.round(h)}px`);
   }
 
@@ -641,29 +833,41 @@ class MovieEnglishApp {
     this.toggleCNEl.addEventListener("change", async () => {
       this.showCN = this.toggleCNEl.checked;
       await this.db.put("meta", { key: "showCN", value: this.showCN });
+
       if (this.view === "study") this.renderStudy();
-      if (this.view === "highlights") await this.renderHighlights();
       if (this.view === "vocab") await this.renderVocabulary();
+      if (this.view === "highlights") await this.renderHighlights();
     });
 
-    this.nextBtnEl.addEventListener("click", () => this.next());
+    this.toggleAutoEl.addEventListener("change", async () => {
+      this.autoMode = this.toggleAutoEl.checked;
+      await this.db.put("meta", { key: "autoMode", value: this.autoMode });
+
+      // Turning auto off should stop any running loop immediately
+      if (!this.autoMode) this.stopAuto();
+      document.body.focus();
+    });
+
+    this.nextBtnEl.addEventListener("click", () => this.onNextClicked());
     this.restartBtnEl.addEventListener("click", () => this.restart());
 
     this.navStudyEl.addEventListener("click", () => this.setView("study"));
     this.navVocabEl.addEventListener("click", () => this.setView("vocab"));
     this.navHighlightsEl.addEventListener("click", () => this.setView("highlights"));
 
-    // delegation
+    // Delegation
     this.appEl.addEventListener("click", (e) => this._handleAppClick(e));
     this.popoverEl.addEventListener("click", (e) => this._handlePopoverClick(e));
   }
 
   _bindGlobal() {
     document.addEventListener("keydown", (e) => {
-      const tag = document.activeElement?.tagName || "";
-      if (e.code === "Space" && this.view === "study" && tag !== "INPUT" && tag !== "BUTTON") {
+      const tag = (document.activeElement?.tagName || "").toUpperCase();
+
+      // Space = Next (Study only), avoid when typing or focusing form elements
+      if (e.code === "Space" && this.view === "study" && tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "BUTTON" && tag !== "SELECT") {
         e.preventDefault();
-        this.next();
+        this.onNextClicked();
       }
     });
 
@@ -678,28 +882,38 @@ class MovieEnglishApp {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Selecting a file should always return to Study
+    await this.setView("study");
+
+    // Stop auto playback whenever loading a file
+    this.stopAuto();
+
     this.currentFileName = file.name;
-    await this.setView("study"); // always return to Study when selecting a file
 
     const text = await file.text();
     this._parseSubtitleText(text);
 
-    await this._loadFavoriteSentencesForFile(this.currentFileName);
     await this._restoreProgressForFile(this.currentFileName);
 
     this.renderStudy();
     this._syncControls();
+    this._syncRestartVisibility();
 
+    // Avoid leaving focus on the file input (space key issue)
+    try { this.fileInputEl.blur(); } catch {}
     document.body.focus();
   }
 
   _parseSubtitleText(text) {
     const lines = String(text).split(/\r?\n/).map(s => s.trim()).filter(Boolean);
     this.sentences = [];
+
+    // Format: CN line then EN line (pairs)
     for (let i = 0; i < lines.length - 1; i += 2) {
       const idx = i / 2;
       this.sentences.push({ idx, cn: lines[i], en: lines[i + 1] });
     }
+
     if (this.sentences.length === 0) {
       this.cursor = -1;
       this.isFinished = false;
@@ -723,19 +937,21 @@ class MovieEnglishApp {
       this.hintEl.textContent =
         `Loaded: ${fileName}. ` +
         (shown > 0 ? `Resumed at sentence ${shown}/${this.sentences.length}.` : `Press Next to start.`) +
-        ` You can Restart anytime.`;
+        ` (Select the same file next time to auto-resume.)`;
     } else {
-      this.hintEl.textContent = `Loaded: ${fileName}, but no valid subtitle lines detected.`;
+      this.hintEl.textContent = `Loaded: ${fileName}, but no valid subtitle pairs were detected.`;
     }
   }
 
   async _saveProgress() {
     if (!this.currentFileName) return;
+
     await this.db.put("progress", {
       fileName: this.currentFileName,
       cursor: this.cursor,
       updatedAt: Date.now()
     });
+
     await this.db.put("meta", { key: "lastFileName", value: this.currentFileName });
   }
 
@@ -759,8 +975,8 @@ class MovieEnglishApp {
     this.favoriteWords = new Set(rows.map(r => r.word));
   }
 
-  async _loadFavoriteSentencesForFile(fileName) {
-    const rows = await this.db.getAllByIndex("sentences", "fileName", fileName);
+  async _loadFavoriteSentencesAll() {
+    const rows = await this.db.getAll("sentences");
     this.favoriteSentenceIds = new Set(rows.map(r => r.id));
   }
 
@@ -768,20 +984,31 @@ class MovieEnglishApp {
     return `${fileName}::${idx}`;
   }
 
+  _hasFileLoaded() {
+    return !!this.currentFileName && this.sentences.length > 0;
+  }
+
+  stopAuto() {
+    this.autoToken += 1;
+    this.speaker.stop();
+  }
+
   async setView(view) {
+    // Switching views should stop auto playback
+    if (view !== "study") this.stopAuto();
+
     this.view = view;
 
-    // file chooser only in Study
+    // File chooser only in Study
     if (view === "study") this.fileBoxEl.classList.remove("hidden");
     else this.fileBoxEl.classList.add("hidden");
 
-    // keep Next occupying space but hide in non-study
+    // Keep Next button space but hide outside Study
     if (view === "study") this.nextBtnEl.classList.remove("hidden-but-keeps-space");
     else this.nextBtnEl.classList.add("hidden-but-keeps-space");
 
-    // restart only for study
-    if (view === "study") this.restartBtnEl.style.display = (this.currentFileName ? "inline-block" : "none");
-    else this.restartBtnEl.style.display = "none";
+    // Restart icon: visible only in Study and only when a file is loaded
+    this._syncRestartVisibility();
 
     this.hidePopover();
     this._syncControls();
@@ -793,48 +1020,114 @@ class MovieEnglishApp {
     document.body.focus();
   }
 
+  _syncRestartVisibility() {
+    const show = (this.view === "study" && this._hasFileLoaded());
+    this.restartBtnEl.classList.toggle("hidden-but-keeps-space", !show);
+  }
+
   _syncControls() {
-    const hasFile = !!this.currentFileName && this.sentences.length > 0;
+    const hasFile = this._hasFileLoaded();
+
     if (!hasFile) {
       this.nextBtnEl.disabled = true;
       this.nextBtnEl.textContent = "Next";
       return;
     }
+
     this.nextBtnEl.disabled = false;
     this.nextBtnEl.textContent = this.isFinished ? "Finish" : "Next";
   }
 
-  next() {
+  async onNextClicked() {
     if (this.view !== "study") return;
-    if (!this.currentFileName || this.sentences.length === 0) return;
 
-    if (this.isFinished) {
+    // If finished, Finish behaves like a button (not disabled)
+    if (this._hasFileLoaded() && this.isFinished) {
+      this.stopAuto();
       alert("Finished 🎉");
       document.body.focus();
       return;
     }
 
-    if (this.cursor < this.sentences.length - 1) {
-      this.cursor++;
-      this.isFinished = (this.cursor >= this.sentences.length - 1);
-      this._saveProgress();
-      this.renderStudy();
-      this._syncControls();
+    const advanced = await this.stepNext({ autoTriggered: false });
+    if (!advanced) return;
+
+    // Auto mode: speak current sentence and then auto-next
+    if (this.autoMode) {
+      this.startAutoFromCurrent();
     }
 
     document.body.focus();
   }
 
+  async stepNext({ autoTriggered }) {
+    if (this.view !== "study") return false;
+    if (!this._hasFileLoaded()) return false;
+
+    const lastIdx = this.sentences.length - 1;
+
+    if (this.isFinished) {
+      if (!autoTriggered) alert("Finished 🎉");
+      return false;
+    }
+
+    if (this.cursor < lastIdx) {
+      this.cursor += 1;
+      this.isFinished = (this.cursor >= lastIdx);
+
+      // Save progress in background
+      this._saveProgress();
+
+      this.renderStudy();
+      this._syncControls();
+      this._syncRestartVisibility();
+      return true;
+    }
+
+    return false;
+  }
+
+  async startAutoFromCurrent() {
+    if (!this.autoMode) return;
+    if (this.view !== "study") return;
+    if (!this._hasFileLoaded()) return;
+
+    const token = ++this.autoToken;
+
+    // Speak current sentence, then wait 1s, then auto-next (repeat)
+    while (this.autoMode && this.view === "study" && this._hasFileLoaded() && token === this.autoToken) {
+      const s = this.sentences[this.cursor];
+      if (!s) break;
+
+      await this.speaker.speak(s.en);
+
+      if (token !== this.autoToken) break;
+      if (!this.autoMode) break;
+      if (this.isFinished) break;
+
+      await new Promise((r) => setTimeout(r, 1000));
+
+      if (token !== this.autoToken) break;
+      if (!this.autoMode) break;
+
+      const advanced = await this.stepNext({ autoTriggered: true });
+      if (!advanced) break;
+    }
+  }
+
   restart() {
     if (this.view !== "study") return;
-    if (!this.currentFileName || this.sentences.length === 0) return;
+    if (!this._hasFileLoaded()) return;
 
-    const ok = confirm("Restart from the beginning? Your saved progress will be updated.");
+    const ok = confirm("Restart from the beginning?");
     if (!ok) return;
+
+    this.stopAuto();
 
     this.cursor = -1;
     this.isFinished = false;
     this._saveProgress();
+
     this.renderStudy();
     this._syncControls();
 
@@ -842,56 +1135,13 @@ class MovieEnglishApp {
     document.body.focus();
   }
 
-  /* ---------- TTS: English sentence only ---------- */
-
-  _pickEnUSVoice() {
-    if (!("speechSynthesis" in window)) return null;
-    const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
-    return voices.find(v => (v.lang || "").toLowerCase().startsWith("en-us"))
-        || voices.find(v => (v.lang || "").toLowerCase().startsWith("en"))
-        || null;
-  }
-
-  speakSentence(idx) {
-    if (!("speechSynthesis" in window)) {
-      alert("TTS is not supported in this browser.");
-      return;
-    }
-    const s = this.sentences.find(x => x.idx === idx);
-    if (!s || !s.en) return;
-
-    // Toggle stop if clicking the same sentence while speaking
-    if (window.speechSynthesis.speaking && this.currentSpeakingIdx === idx) {
-      window.speechSynthesis.cancel();
-      this.currentSpeakingIdx = null;
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-
-    const u = new SpeechSynthesisUtterance(s.en);
-    u.lang = "en-US";
-    const voice = this._pickEnUSVoice();
-    if (voice) u.voice = voice;
-    u.rate = 1.0;
-    u.pitch = 1.0;
-
-    this.currentSpeakingIdx = idx;
-
-    u.onend = () => { this.currentSpeakingIdx = null; };
-    u.onerror = () => { this.currentSpeakingIdx = null; };
-
-    window.speechSynthesis.speak(u);
-  }
-
-  renderStudy() {
+  renderStudy({ scrollToIdx = null } = {}) {
     this.appEl.innerHTML = "";
 
     const shown = this.sentences.slice(0, this.cursor + 1);
     const frag = document.createDocumentFragment();
-    let latestEl = null;
 
-    shown.forEach((s) => {
+    for (const s of shown) {
       const wrap = document.createElement("div");
       wrap.className = "sentence";
       wrap.dataset.sentenceIdx = String(s.idx);
@@ -900,6 +1150,7 @@ class MovieEnglishApp {
       const en = document.createElement("div");
       en.className = "en";
 
+      // Clickable words
       const tokens = s.en.split(" ");
       tokens.forEach((tok, i) => {
         const clean = tok.replace(/[^a-zA-Z']/g, "");
@@ -913,12 +1164,13 @@ class MovieEnglishApp {
 
       // Sentence speaker (TTS) before star
       const speak = document.createElement("span");
-      speak.className = "speaker";
-      speak.dataset.action = "speakSentence";
-      speak.dataset.sentenceIdx = String(s.idx);
+      speak.className = "speaker-inline";
+      speak.dataset.action = "playSentence";
+      speak.dataset.idx = String(s.idx);
       speak.title = "Read sentence";
       speak.textContent = "🔊";
 
+      // Sentence star
       const sid = this._sentenceKey(this.currentFileName, s.idx);
       const star = document.createElement("span");
       star.className = "star";
@@ -941,29 +1193,49 @@ class MovieEnglishApp {
       }
 
       frag.appendChild(wrap);
-      latestEl = wrap;
-    });
+    }
 
     this.appEl.appendChild(frag);
 
-    // Make sure last sentence is fully visible above the bottom bar
-    if (latestEl) {
-      latestEl.scrollIntoView({ behavior: "smooth", block: "end" });
-      setTimeout(() => {
-        const barH = this.controlsBar.getBoundingClientRect().height;
-        const rect = latestEl.getBoundingClientRect();
-        const limit = window.innerHeight - barH - 8;
-        if (rect.bottom > limit) {
-          window.scrollBy({ top: rect.bottom - limit, left: 0, behavior: "smooth" });
-        }
-      }, 220);
+    // Scroll target: specific sentence (e.g., from Highlights) OR the latest shown
+    let targetEl = null;
+
+    if (typeof scrollToIdx === "number" && Number.isFinite(scrollToIdx)) {
+      targetEl = document.getElementById(`sent-${scrollToIdx}`);
     }
+    if (!targetEl && shown.length) {
+      targetEl = document.getElementById(`sent-${shown[shown.length - 1].idx}`);
+    }
+
+    if (targetEl) {
+      this._scrollSentenceFullyVisible(targetEl);
+    }
+  }
+
+  _scrollSentenceFullyVisible(el) {
+    // Ensure the element's bottom is not covered by the bottom controls
+    const rect = el.getBoundingClientRect();
+    const barH = this.controlsBar.getBoundingClientRect().height;
+    const padding = 10;
+
+    // First, bring it into view roughly
+    el.scrollIntoView({ behavior: "smooth", block: "end" });
+
+    // Then compensate if the bottom is still covered
+    setTimeout(() => {
+      const r = el.getBoundingClientRect();
+      const visibleBottom = window.innerHeight - barH - padding;
+      const diff = r.bottom - visibleBottom;
+      if (diff > 0) {
+        window.scrollBy({ top: diff + 6, left: 0, behavior: "smooth" });
+      }
+    }, 200);
   }
 
   /* ---------- Grouping helpers ---------- */
 
   _groupByFileName(items, fileNameField = "fileName") {
-    const groups = new Map();
+    const groups = new Map(); // fileName -> { name, items[], newestSavedAt }
     for (const it of items) {
       const nameRaw = it?.[fileNameField];
       const name = (nameRaw && String(nameRaw).trim()) ? String(nameRaw).trim() : "Other";
@@ -973,13 +1245,46 @@ class MovieEnglishApp {
       const t = Number(it.savedAt || 0);
       if (t > g.newestSavedAt) g.newestSavedAt = t;
     }
+
+    // Groups: newest first
     const arr = Array.from(groups.values());
     arr.sort((a, b) => (b.newestSavedAt || 0) - (a.newestSavedAt || 0));
-    for (const g of arr) g.items.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+
+    // Items: newest first
+    for (const g of arr) {
+      g.items.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+    }
+
     return arr;
   }
 
-  /* ---------- Vocabulary: CN vertical + obey Show Chinese ---------- */
+  _normalizeZhList(record) {
+    if (Array.isArray(record?.zhList) && record.zhList.length) return record.zhList;
+    const z = String(record?.zh || "").trim();
+    return z ? [z] : [];
+  }
+
+  _renderZhBlock(parentEl, zhList) {
+    if (!this.showCN) return;
+    const list = Array.isArray(zhList) ? zhList : [];
+    if (list.length === 0) return;
+
+    const cn = document.createElement("div");
+    cn.className = "cn";
+
+    // If some items are joined by "；" already, keep them as-is (full output requested)
+    const lines = [];
+    for (const x of list) {
+      const s = String(x || "").trim();
+      if (!s) continue;
+      lines.push(s);
+    }
+
+    cn.textContent = lines.join("\n");
+    parentEl.appendChild(cn);
+  }
+
+  /* ---------- Views: Vocabulary / Highlights ---------- */
 
   async renderVocabulary() {
     this.appEl.innerHTML = "";
@@ -1024,15 +1329,14 @@ class MovieEnglishApp {
       actions.appendChild(delAll);
       head.appendChild(name);
       head.appendChild(actions);
-
       groupEl.appendChild(head);
 
       for (const r of g.items) {
         const item = document.createElement("div");
         item.className = "list-item";
 
-        const enLine = document.createElement("div");
-        enLine.className = "en";
+        const line = document.createElement("div");
+        line.className = "en";
 
         const w = document.createElement("span");
         w.className = "word";
@@ -1045,18 +1349,14 @@ class MovieEnglishApp {
         star.dataset.word = r.word;
         star.textContent = "★";
 
-        enLine.appendChild(w);
-        enLine.appendChild(document.createTextNode(" "));
-        enLine.appendChild(star);
+        line.appendChild(w);
+        line.appendChild(document.createTextNode(" "));
+        line.appendChild(star);
 
-        item.appendChild(enLine);
+        item.appendChild(line);
 
-        if (this.showCN && r.zh) {
-          const cn = document.createElement("div");
-          cn.className = "cn";
-          cn.textContent = r.zh;
-          item.appendChild(cn);
-        }
+        // CN under the word line, controlled by Show Chinese
+        this._renderZhBlock(item, this._normalizeZhList(r));
 
         groupEl.appendChild(item);
       }
@@ -1066,8 +1366,6 @@ class MovieEnglishApp {
 
     this.appEl.appendChild(frag);
   }
-
-  /* ---------- Highlights: clickable jump back to Study (same file only) ---------- */
 
   async renderHighlights() {
     this.appEl.innerHTML = "";
@@ -1112,16 +1410,14 @@ class MovieEnglishApp {
       actions.appendChild(delAll);
       head.appendChild(name);
       head.appendChild(actions);
-
       groupEl.appendChild(head);
 
       for (const r of g.items) {
         const item = document.createElement("div");
         item.className = "list-item clickable";
-        item.dataset.action = "jumpHighlight";
-        item.dataset.fileName = r.fileName || "";
-        item.dataset.idx = String(r.idx ?? "");
-        item.title = r.fileName ? "Click to jump (requires the same file loaded)" : "No source file (Other)";
+        item.dataset.action = "jumpToSentence";
+        item.dataset.fileName = r.fileName ? String(r.fileName) : "";
+        item.dataset.idx = String(r.idx);
 
         const enLine = document.createElement("div");
         enLine.className = "en";
@@ -1135,6 +1431,7 @@ class MovieEnglishApp {
 
         enLine.appendChild(document.createTextNode(" "));
         enLine.appendChild(star);
+
         item.appendChild(enLine);
 
         if (this.showCN) {
@@ -1146,7 +1443,7 @@ class MovieEnglishApp {
 
         const meta = document.createElement("div");
         meta.className = "meta";
-        meta.textContent = `Source: ${r.fileName || "Other"}`;
+        meta.textContent = r.fileName ? `Source: ${r.fileName}` : "Source: Other";
         item.appendChild(meta);
 
         groupEl.appendChild(item);
@@ -1158,72 +1455,36 @@ class MovieEnglishApp {
     this.appEl.appendChild(frag);
   }
 
-  async jumpToHighlight(fileName, idxStr) {
-    const idx = Number(idxStr);
-
-    if (!fileName) {
-      alert("This highlight has no source file recorded (Other).");
-      return;
-    }
-
-    if (!this.currentFileName) {
-      alert(`Please load the file "${fileName}" first, then click the highlight again.`);
-      return;
-    }
-
-    if (this.currentFileName !== fileName) {
-      alert(
-        `Current file: ${this.currentFileName}\n` +
-        `This highlight belongs to: ${fileName}\n\n` +
-        `Please load "${fileName}" first, then click the highlight again.`
-      );
-      return;
-    }
-
-    if (!Number.isFinite(idx) || idx < 0) return;
-    if (!this.sentences || this.sentences.length === 0) return;
-
-    const maxIdx = this.sentences.length - 1;
-    const targetIdx = Math.max(0, Math.min(idx, maxIdx));
-
-    if (this.cursor < targetIdx) this.cursor = targetIdx;
-    this.isFinished = (this.cursor >= maxIdx);
-    await this._saveProgress();
-
-    await this.setView("study");
-
-    setTimeout(() => {
-      const el = document.getElementById(`sent-${targetIdx}`);
-      if (!el) return;
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      el.classList.add("flash");
-      setTimeout(() => el.classList.remove("flash"), 2200);
-    }, 120);
-  }
-
   /* ---------- Click handlers ---------- */
 
   async _handleAppClick(e) {
     const target = e.target;
 
-    // word click: show popover (study + vocab)
+    // Word click: show popover (also stop auto to avoid skipping while checking words)
     const wordEl = target.closest?.(".word");
     if (wordEl && wordEl.dataset.word) {
       const raw = wordEl.dataset.word;
       const word = String(raw).trim();
-      if (word) await this.showPopover(word, wordEl);
+      if (word) {
+        this.stopAuto();
+        await this.showPopover(word, wordEl);
+      }
       return;
     }
 
-    // action buttons / clickable items
+    // Actions (stars, group delete, sentence TTS, jump)
     const actionEl = target.closest?.("[data-action]");
     if (!actionEl) return;
 
     const action = actionEl.dataset.action;
 
-    if (action === "speakSentence") {
-      const idx = Number(actionEl.dataset.sentenceIdx);
-      if (Number.isFinite(idx)) this.speakSentence(idx);
+    if (action === "playSentence") {
+      const idx = Number(actionEl.dataset.idx);
+      const s = this.sentences.find(x => x.idx === idx);
+      if (s?.en) {
+        this.stopAuto();
+        await this.speaker.speak(s.en);
+      }
       return;
     }
 
@@ -1251,10 +1512,10 @@ class MovieEnglishApp {
       return;
     }
 
-    if (action === "jumpHighlight") {
-      const fileName = actionEl.dataset.fileName || "";
-      const idxStr = actionEl.dataset.idx || "";
-      await this.jumpToHighlight(fileName, idxStr);
+    if (action === "jumpToSentence") {
+      const fileName = String(actionEl.dataset.fileName || "").trim();
+      const idx = Number(actionEl.dataset.idx);
+      await this.jumpToSentenceIfPossible(fileName, idx);
       return;
     }
   }
@@ -1271,10 +1532,39 @@ class MovieEnglishApp {
     }
 
     if (action === "playUS") {
-      const url = this.currentPopoverData?.audioUS || "";
-      if (url) this.dict.playAudio(url);
+      if (!this.currentPopoverWord) return;
+      await this.dict.playUS(this.currentPopoverWord);
       return;
     }
+  }
+
+  async jumpToSentenceIfPossible(fileName, idx) {
+    // Only jump if the currently opened file is the same as the highlight source file
+    if (!fileName || !Number.isFinite(idx)) {
+      this.hintEl.textContent = "Cannot jump: missing source file info.";
+      return;
+    }
+
+    if (!this._hasFileLoaded() || this.currentFileName !== fileName) {
+      this.hintEl.textContent = `To jump, please load this file in Study: ${fileName}`;
+      return;
+    }
+
+    const maxIdx = this.sentences.length - 1;
+    const targetIdx = Math.max(0, Math.min(idx, maxIdx));
+
+    // Ensure the sentence is visible (extend progress if needed, but do not reduce progress)
+    const prev = this.cursor;
+    if (this.cursor < targetIdx) {
+      this.cursor = targetIdx;
+      this.isFinished = (this.cursor >= maxIdx);
+      this._saveProgress();
+    }
+
+    await this.setView("study");
+    this.renderStudy({ scrollToIdx: targetIdx });
+    this._syncControls();
+    document.body.focus();
   }
 
   /* ---------- Popover ---------- */
@@ -1287,10 +1577,12 @@ class MovieEnglishApp {
     this.currentPopoverData = null;
 
     const saved = this.favoriteWords.has(w);
+
     this.popoverEl.innerHTML = `
       <h4>${escapeHtml(w)} <span class="star" data-pop-action="toggleWord">${saved ? "★" : "☆"}</span></h4>
       <div class="loading">Loading...</div>
     `;
+
     this._positionPopover(anchorEl);
     this.popoverEl.style.display = "block";
 
@@ -1302,8 +1594,22 @@ class MovieEnglishApp {
     const ipa = data?.ipaUS ? escapeHtml(data.ipaUS) : "";
     const hasUSAudio = !!(data?.audioUS);
 
-    const zhList = Array.isArray(data?.zhList) ? data.zhList : [];
-    const zhHtml = zhList.length ? zhList.map(escapeHtml).join("<br>") : (data?.zh ? escapeHtml(data.zh) : "-");
+    const zhListRaw = String(data?.zhList || []).trim();
+    const zhParts = zhListRaw ? zhListRaw.split("\n") : [];
+    const zhLines = [];
+
+    // data.zhList is an array from lookup; keep full output, split by delimiter if joined
+    if (Array.isArray(data?.zhList)) {
+      for (const item of data.zhList) {
+        const s = String(item || "").trim();
+        if (!s) continue;
+        // if joined by "；", keep as full; also allow multi-lines
+        zhLines.push(...s.split(/\n/).map(x => x.trim()).filter(Boolean));
+      }
+    }
+
+    // Fallback
+    if (zhLines.length === 0) zhLines.push("-");
 
     this.popoverEl.innerHTML = `
       <h4>${escapeHtml(w)} <span class="star" data-pop-action="toggleWord">${starChar}</span></h4>
@@ -1311,7 +1617,9 @@ class MovieEnglishApp {
         <span>${ipa}</span>
         <span class="speaker ${hasUSAudio ? "" : "disabled"}" data-pop-action="playUS" title="Play US pronunciation">🔊</span>
       </div>
-      <div class="cn-def">${zhHtml}</div>
+      <div class="cn-def">
+        ${zhLines.map(t => `<div class="cn-item">• ${escapeHtml(t)}</div>`).join("")}
+      </div>
     `;
 
     this._positionPopover(anchorEl, true);
@@ -1369,20 +1677,24 @@ class MovieEnglishApp {
         ? this.currentPopoverData
         : await this.dict.lookup(w);
 
-      const zhText = data?.zh || "";
+      // Store full Chinese meanings (array), plus compatibility string
+      const zhList = Array.isArray(data?.zhList) ? data.zhList : [];
+      const zhCompat = zhList.join("\n");
 
       await this.db.put("words", {
         word: w,
         fileName: this.currentFileName || null,
-        zh: zhText,
+        zhList: zhList,
+        zh: zhCompat,
         ipaUS: data?.ipaUS || "",
         audioUS: data?.audioUS || "",
         savedAt: Date.now()
       });
+
       this.favoriteWords.add(w);
     }
 
-    // update popover star if open
+    // Update popover star if open
     if (this.currentPopoverWord === w && this.popoverEl.style.display === "block") {
       const star = this.popoverEl.querySelector('[data-pop-action="toggleWord"]');
       if (star) star.textContent = this.favoriteWords.has(w) ? "★" : "☆";
@@ -1400,8 +1712,12 @@ class MovieEnglishApp {
       await this.db.del("sentences", sentenceId);
       this.favoriteSentenceIds.delete(sentenceId);
     } else {
+      // Saving a sentence requires it to exist in the currently loaded file
+      if (!this._hasFileLoaded()) return;
+
       const [fileName, idxStr] = sentenceId.split("::");
       const idx = Number(idxStr);
+
       const s = this.sentences.find(x => x.idx === idx);
       if (!s) return;
 
@@ -1413,6 +1729,7 @@ class MovieEnglishApp {
         cn: s.cn,
         savedAt: Date.now()
       });
+
       this.favoriteSentenceIds.add(sentenceId);
     }
 
@@ -1435,6 +1752,7 @@ class MovieEnglishApp {
 
     const keys = target.map(x => x.word);
     await this.db.bulkDelete("words", keys);
+
     keys.forEach(k => this.favoriteWords.delete(k));
 
     if (this.view === "vocab") await this.renderVocabulary();
@@ -1453,6 +1771,7 @@ class MovieEnglishApp {
 
     const keys = target.map(x => x.id);
     await this.db.bulkDelete("sentences", keys);
+
     keys.forEach(k => this.favoriteSentenceIds.delete(k));
 
     if (this.view === "highlights") await this.renderHighlights();
