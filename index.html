@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Learn English by Watching Movies</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root { --bar-h: 76px; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+    body:focus { outline: none; }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 16px 16px calc(var(--bar-h) + 90px);
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 650;
+      margin-bottom: 10px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: #9ca3af;
+      line-height: 1.4;
+    }
+
+    .sentence {
+      margin-bottom: 22px;
+      scroll-margin-bottom: calc(var(--bar-h) + 16px);
+      border-radius: 12px;
+    }
+    .sentence.flash {
+      animation: flash 1.1s ease-in-out 0s 2;
+      padding: 8px;
+      margin-left: -8px;
+      margin-right: -8px;
+      background: rgba(34,197,94,0.10);
+    }
+    @keyframes flash {
+      0% { background: rgba(34,197,94,0.00); }
+      50% { background: rgba(34,197,94,0.16); }
+      100% { background: rgba(34,197,94,0.00); }
+    }
+
+    .en {
+      font-size: 18px;
+      line-height: 1.6;
+      word-wrap: break-word;
+    }
+
+    .word {
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    .word:hover { background: #1e293b; }
+
+    .cn {
+      margin-top: 6px;
+      font-size: 15px;
+      color: #9ca3af;
+      white-space: pre-line;
+    }
+
+    .star {
+      cursor: pointer;
+      font-size: 18px;
+      margin-left: 8px;
+      user-select: none;
+    }
+
+    /* Bottom bar (stable height) */
+    .controls {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #020617;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      min-height: var(--bar-h);
+      box-sizing: border-box;
+    }
+
+    .controls-left {
+      justify-self: start;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      font-size: 14px;
+      color: #cbd5f5;
+
+      /* prevent wrapping to keep bar height stable */
+      flex-wrap: nowrap;
+      white-space: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .controls-left::-webkit-scrollbar { display: none; }
+
+    .controls-center { justify-self: center; }
+
+    .controls-right {
+      justify-self: end;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: 14px;
+      color: #cbd5f5;
+      white-space: nowrap;
+    }
+
+    .nav {
+      cursor: pointer;
+      user-select: none;
+      opacity: 0.95;
+    }
+    .nav:hover { opacity: 1; }
+
+    .next-btn {
+      padding: 12px 40px;
+      font-size: 18px;
+      border-radius: 999px;
+      border: none;
+      background: #22c55e;
+      color: #022c22;
+      cursor: pointer;
+    }
+    .next-btn:disabled {
+      background: #334155;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    /* Next placeholder (keep layout stable) */
+    .hidden-but-keeps-space { visibility: hidden; }
+
+    .ghost-btn {
+      padding: 10px 12px;
+      font-size: 14px;
+      border-radius: 999px;
+      border: 1px solid #334155;
+      background: transparent;
+      color: #cbd5f5;
+      cursor: pointer;
+    }
+    .ghost-btn:hover { border-color: #475569; }
+
+    /* Popover */
+    .popover {
+      position: absolute;
+      background: #020617;
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 999;
+      display: none;
+      max-width: 320px;
+      width: fit-content;
+    }
+
+    .popover h4 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      font-weight: 650;
+    }
+
+    .ipa-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: #9ca3af;
+      font-size: 14px;
+    }
+
+    .speaker {
+      cursor: pointer;
+      user-select: none;
+    }
+    .speaker.disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    .cn-def {
+      font-size: 14px;
+      color: #cbd5f5;
+      line-height: 1.45;
+      word-break: break-word;
+      white-space: normal;
+    }
+
+    .loading { font-size: 13px; color: #9ca3af; }
+
+    /* Grouped lists */
+    .list-title {
+      font-size: 18px;
+      font-weight: 650;
+      margin: 10px 0 14px;
+    }
+
+    .group {
+      margin: 14px 0 18px;
+      padding: 12px;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      background: rgba(2,6,23,0.35);
+    }
+
+    .group-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .group-name {
+      font-size: 14px;
+      font-weight: 650;
+      color: #cbd5f5;
+      word-break: break-word;
+    }
+
+    .group-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .small-btn {
+      padding: 8px 10px;
+      font-size: 12px;
+      border-radius: 999px;
+      border: 1px solid #334155;
+      background: transparent;
+      color: #cbd5f5;
+      cursor: pointer;
+    }
+    .small-btn:hover { border-color: #475569; }
+
+    .list-item { margin-bottom: 12px; }
+    .list-item.clickable { cursor: pointer; }
+    .list-item.clickable:hover { opacity: 0.98; }
+
+    .meta {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    /* hide file input in non-study view */
+    .hidden { display: none !important; }
+  </style>
+</head>
+
+<body tabindex="-1">
+  <div class="container">
+    <div class="page-title">Learn English by Watching Movies</div>
+
+    <div class="topbar">
+      <div id="fileBox">
+        <input type="file" accept=".txt" id="fileInput" />
+      </div>
+      <div id="hint" class="hint"></div>
+    </div>
+
+    <div id="app"></div>
+  </div>
+
+  <div class="controls" id="controlsBar">
+    <div class="controls-left">
+      <label>
+        <input type="checkbox" checked id="toggleCN" />
+        Show Chinese
+      </label>
+      <span class="nav" id="navStudy">🏠 Study</span>
+      <span class="nav" id="navVocab">📘 Vocabulary</span>
+      <span class="nav" id="navHighlights">💬 Highlights</span>
+    </div>
+
+    <div class="controls-center">
+      <button class="next-btn" id="nextBtn" disabled>Next</button>
+    </div>
+
+    <div class="controls-right">
+      <!-- subtle restart icon + tooltip -->
+      <button class="ghost-btn" id="restartBtn" style="display:none;" title="Restart">↺</button>
+    </div>
+  </div>
+
+  <div id="popover" class="popover"></div>
+
+<script>
+/* =========================
+   Storage: IndexedDB (promise wrapper)
+   ========================= */
+
+class IDBStore {
+  constructor(dbName, dbVersion) {
+    this.dbName = dbName;
+    this.dbVersion = dbVersion;
+    this.db = null;
+  }
+
+  async init() {
+    if (this.db) return this.db;
+
+    this.db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open(this.dbName, this.dbVersion);
+
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+
+        // words store: key = word
+        if (!db.objectStoreNames.contains("words")) {
+          const w = db.createObjectStore("words", { keyPath: "word" });
+          w.createIndex("fileName", "fileName", { unique: false });
+          w.createIndex("savedAt", "savedAt", { unique: false });
+        } else {
+          const tx = e.target.transaction;
+          const w = tx.objectStore("words");
+          if (!w.indexNames.contains("fileName")) w.createIndex("fileName", "fileName", { unique: false });
+          if (!w.indexNames.contains("savedAt")) w.createIndex("savedAt", "savedAt", { unique: false });
+        }
+
+        // sentences store: key = id `${fileName}::${idx}`
+        if (!db.objectStoreNames.contains("sentences")) {
+          const s = db.createObjectStore("sentences", { keyPath: "id" });
+          s.createIndex("fileName", "fileName", { unique: false });
+          s.createIndex("savedAt", "savedAt", { unique: false });
+        } else {
+          const tx = e.target.transaction;
+          const s = tx.objectStore("sentences");
+          if (!s.indexNames.contains("fileName")) s.createIndex("fileName", "fileName", { unique: false });
+          if (!s.indexNames.contains("savedAt")) s.createIndex("savedAt", "savedAt", { unique: false });
+        }
+
+        // progress: key=fileName
+        if (!db.objectStoreNames.contains("progress")) {
+          db.createObjectStore("progress", { keyPath: "fileName" });
+        }
+
+        // meta: key/value
+        if (!db.objectStoreNames.contains("meta")) {
+          db.createObjectStore("meta", { keyPath: "key" });
+        }
+      };
+
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+
+    return this.db;
+  }
+
+  _store(storeName, mode="readonly") {
+    const tx = this.db.transaction(storeName, mode);
+    return tx.objectStore(storeName);
+  }
+
+  async get(storeName, key) {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const req = this._store(storeName, "readonly").get(key);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async put(storeName, value) {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const req = this._store(storeName, "readwrite").put(value);
+      req.onsuccess = () => resolve(true);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async del(storeName, key) {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const req = this._store(storeName, "readwrite").delete(key);
+      req.onsuccess = () => resolve(true);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async getAll(storeName) {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const req = this._store(storeName, "readonly").getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async getAllByIndex(storeName, indexName, indexValue) {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const store = this._store(storeName, "readonly");
+      const idx = store.index(indexName);
+      const req = idx.getAll(indexValue);
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async bulkDelete(storeName, keys) {
+    await this.init();
+    if (!keys || keys.length === 0) return true;
+    return new Promise((resolve, reject) => {
+      const store = this._store(storeName, "readwrite");
+      let i = 0;
+      const next = () => {
+        if (i >= keys.length) return resolve(true);
+        const req = store.delete(keys[i++]);
+        req.onsuccess = next;
+        req.onerror = () => reject(req.error);
+      };
+      next();
+    });
+  }
+}
+
+/* =========================
+   Dictionary: US only + CN only (NO CACHE, NO local override dict)
+   - CN: show multiple candidates (from MyMemory response + matches)
+   ========================= */
+
+class DictionaryService {
+  constructor() {
+    this.audioPlayer = new Audio();
+  }
+
+  normalize(word) {
+    return String(word || "").trim().toLowerCase();
+  }
+
+  playAudio(url) {
+    if (!url) return false;
+    this.audioPlayer.src = url;
+    this.audioPlayer.play();
+    return true;
+  }
+
+  async lookup(word) {
+    const w = this.normalize(word);
+    if (!w) return null;
+
+    const [phon, zhList] = await Promise.all([
+      this._fetchUSPhonetics(w),
+      this._fetchChineseList(w)
+    ]);
+
+    const zhText = (zhList && zhList.length) ? zhList.join("；") : "";
+    return { ipaUS: phon.ipaUS, audioUS: phon.audioUS, zhList: zhList || [], zh: zhText };
+  }
+
+  async _fetchUSPhonetics(wordLower) {
+    const out = { ipaUS: "", audioUS: "" };
+    try {
+      const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(wordLower)}`);
+      const json = await res.json();
+      if (!Array.isArray(json)) return out;
+
+      const phonetics = [];
+      for (const entry of json) {
+        if (Array.isArray(entry.phonetics)) {
+          for (const p of entry.phonetics) {
+            phonetics.push({ text: p.text || "", audio: p.audio || "" });
+          }
+        }
+      }
+
+      const isUsAudio = (url) => {
+        const u = (url || "").toLowerCase();
+        return u.includes("-us.mp3") || u.endsWith("us.mp3") || u.includes("en-us");
+      };
+
+      for (const p of phonetics) {
+        if (p.audio && isUsAudio(p.audio)) {
+          if (!out.audioUS) out.audioUS = p.audio;
+          if (!out.ipaUS && p.text) out.ipaUS = p.text;
+        }
+        if (out.audioUS && out.ipaUS) break;
+      }
+
+      if (!out.ipaUS) out.ipaUS = phonetics.find(p => p.text)?.text || "";
+      return out;
+    } catch {
+      return out;
+    }
+  }
+
+  async _fetchChineseList(wordLower) {
+    const isChinese = (s) => /[\u4e00-\u9fff]/.test(s);
+
+    const dedup = [];
+    const seen = new Set();
+
+    const add = (t) => {
+      if (t === null || t === undefined) return;
+      let s = String(t).trim();
+      if (!s) return;
+      if (s.toLowerCase() === wordLower) return;
+      // Keep only likely Chinese outputs
+      if (!isChinese(s)) return;
+      // Normalize
+      s = s.replace(/\s+/g, " ").trim();
+      if (!s) return;
+      if (seen.has(s)) return;
+      seen.add(s);
+      dedup.push(s);
+    };
+
+    try {
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(wordLower)}&langpair=en|zh-CN`;
+      const res = await fetch(url);
+      const json = await res.json();
+
+      add(json?.responseData?.translatedText);
+
+      const matches = Array.isArray(json?.matches) ? json.matches.slice() : [];
+      matches.sort((a, b) => (Number(b.match || 0) - Number(a.match || 0)));
+
+      for (const m of matches) add(m?.translation);
+
+      return dedup;
+    } catch {
+      return [];
+    }
+  }
+}
+
+/* =========================
+   App
+   ========================= */
+
+class MovieEnglishApp {
+  constructor() {
+    this.db = new IDBStore("learn-english-db", 3);
+    this.dict = new DictionaryService();
+
+    // UI refs
+    this.appEl = document.getElementById("app");
+    this.popoverEl = document.getElementById("popover");
+    this.hintEl = document.getElementById("hint");
+
+    this.fileBoxEl = document.getElementById("fileBox");
+    this.fileInputEl = document.getElementById("fileInput");
+
+    this.toggleCNEl = document.getElementById("toggleCN");
+    this.nextBtnEl = document.getElementById("nextBtn");
+    this.restartBtnEl = document.getElementById("restartBtn");
+
+    this.navStudyEl = document.getElementById("navStudy");
+    this.navVocabEl = document.getElementById("navVocab");
+    this.navHighlightsEl = document.getElementById("navHighlights");
+
+    this.controlsBar = document.getElementById("controlsBar");
+
+    // runtime state
+    this.view = "study";
+    this.showCN = true;
+
+    this.currentFileName = null;
+    this.sentences = []; // [{ idx, en, cn }]
+    this.cursor = -1;
+    this.isFinished = false;
+
+    // favorites in memory
+    this.favoriteWords = new Set();         // wordLower
+    this.favoriteSentenceIds = new Set();   // `${fileName}::${idx}`
+
+    // popover state
+    this.currentPopoverWord = null;
+    this.currentPopoverData = null;
+
+    // TTS state
+    this.currentSpeakingIdx = null;
+  }
+
+  async init() {
+    await this.db.init();
+
+    // keep bar height variable accurate
+    this._syncBarHeightVar();
+    window.addEventListener("resize", () => this._syncBarHeightVar());
+
+    // load prefs
+    const showCNMeta = await this.db.get("meta", "showCN");
+    if (showCNMeta && typeof showCNMeta.value === "boolean") {
+      this.showCN = showCNMeta.value;
+      this.toggleCNEl.checked = this.showCN;
+    }
+
+    // favorites
+    await this._loadFavoriteWords();
+
+    // hint
+    await this._renderLastSessionHint();
+
+    // bind UI
+    this._bindUI();
+    this._bindGlobal();
+
+    // focus
+    window.addEventListener("load", () => document.body.focus());
+  }
+
+  _syncBarHeightVar() {
+    const h = Math.max(72, this.controlsBar.getBoundingClientRect().height);
+    document.documentElement.style.setProperty("--bar-h", `${Math.round(h)}px`);
+  }
+
+  _bindUI() {
+    this.fileInputEl.addEventListener("change", (e) => this._onFileSelected(e));
+
+    this.toggleCNEl.addEventListener("change", async () => {
+      this.showCN = this.toggleCNEl.checked;
+      await this.db.put("meta", { key: "showCN", value: this.showCN });
+      if (this.view === "study") this.renderStudy();
+      if (this.view === "highlights") await this.renderHighlights();
+      if (this.view === "vocab") await this.renderVocabulary();
+    });
+
+    this.nextBtnEl.addEventListener("click", () => this.next());
+    this.restartBtnEl.addEventListener("click", () => this.restart());
+
+    this.navStudyEl.addEventListener("click", () => this.setView("study"));
+    this.navVocabEl.addEventListener("click", () => this.setView("vocab"));
+    this.navHighlightsEl.addEventListener("click", () => this.setView("highlights"));
+
+    // delegation
+    this.appEl.addEventListener("click", (e) => this._handleAppClick(e));
+    this.popoverEl.addEventListener("click", (e) => this._handlePopoverClick(e));
+  }
+
+  _bindGlobal() {
+    document.addEventListener("keydown", (e) => {
+      const tag = document.activeElement?.tagName || "";
+      if (e.code === "Space" && this.view === "study" && tag !== "INPUT" && tag !== "BUTTON") {
+        e.preventDefault();
+        this.next();
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      const within = this.popoverEl.contains(e.target);
+      const isWord = e.target?.classList?.contains("word");
+      if (!within && !isWord) this.hidePopover();
+    });
+  }
+
+  async _onFileSelected(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    this.currentFileName = file.name;
+    await this.setView("study"); // always return to Study when selecting a file
+
+    const text = await file.text();
+    this._parseSubtitleText(text);
+
+    await this._loadFavoriteSentencesForFile(this.currentFileName);
+    await this._restoreProgressForFile(this.currentFileName);
+
+    this.renderStudy();
+    this._syncControls();
+
+    document.body.focus();
+  }
+
+  _parseSubtitleText(text) {
+    const lines = String(text).split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    this.sentences = [];
+    for (let i = 0; i < lines.length - 1; i += 2) {
+      const idx = i / 2;
+      this.sentences.push({ idx, cn: lines[i], en: lines[i + 1] });
+    }
+    if (this.sentences.length === 0) {
+      this.cursor = -1;
+      this.isFinished = false;
+    }
+  }
+
+  async _restoreProgressForFile(fileName) {
+    const rec = await this.db.get("progress", fileName);
+    const maxCursor = this.sentences.length - 1;
+
+    if (rec && typeof rec.cursor === "number") {
+      this.cursor = Math.max(-1, Math.min(rec.cursor, maxCursor));
+    } else {
+      this.cursor = -1;
+    }
+
+    this.isFinished = (this.sentences.length > 0 && this.cursor >= maxCursor);
+
+    if (this.sentences.length > 0) {
+      const shown = Math.max(0, this.cursor + 1);
+      this.hintEl.textContent =
+        `Loaded: ${fileName}. ` +
+        (shown > 0 ? `Resumed at sentence ${shown}/${this.sentences.length}.` : `Press Next to start.`) +
+        ` You can Restart anytime.`;
+    } else {
+      this.hintEl.textContent = `Loaded: ${fileName}, but no valid subtitle lines detected.`;
+    }
+  }
+
+  async _saveProgress() {
+    if (!this.currentFileName) return;
+    await this.db.put("progress", {
+      fileName: this.currentFileName,
+      cursor: this.cursor,
+      updatedAt: Date.now()
+    });
+    await this.db.put("meta", { key: "lastFileName", value: this.currentFileName });
+  }
+
+  async _renderLastSessionHint() {
+    const last = await this.db.get("meta", "lastFileName");
+    if (last?.value) {
+      const p = await this.db.get("progress", last.value);
+      if (p && typeof p.cursor === "number") {
+        const n = Math.max(0, p.cursor + 1);
+        this.hintEl.textContent = `Last session: ${last.value}, sentence ${n}. Select the same file to auto-resume.`;
+        return;
+      }
+      this.hintEl.textContent = `Last session: ${last.value}. Select the same file to resume.`;
+      return;
+    }
+    this.hintEl.textContent = `Select a bilingual subtitle TXT file to start.`;
+  }
+
+  async _loadFavoriteWords() {
+    const rows = await this.db.getAll("words");
+    this.favoriteWords = new Set(rows.map(r => r.word));
+  }
+
+  async _loadFavoriteSentencesForFile(fileName) {
+    const rows = await this.db.getAllByIndex("sentences", "fileName", fileName);
+    this.favoriteSentenceIds = new Set(rows.map(r => r.id));
+  }
+
+  _sentenceKey(fileName, idx) {
+    return `${fileName}::${idx}`;
+  }
+
+  async setView(view) {
+    this.view = view;
+
+    // file chooser only in Study
+    if (view === "study") this.fileBoxEl.classList.remove("hidden");
+    else this.fileBoxEl.classList.add("hidden");
+
+    // keep Next occupying space but hide in non-study
+    if (view === "study") this.nextBtnEl.classList.remove("hidden-but-keeps-space");
+    else this.nextBtnEl.classList.add("hidden-but-keeps-space");
+
+    // restart only for study
+    if (view === "study") this.restartBtnEl.style.display = (this.currentFileName ? "inline-block" : "none");
+    else this.restartBtnEl.style.display = "none";
+
+    this.hidePopover();
+    this._syncControls();
+
+    if (view === "study") this.renderStudy();
+    if (view === "vocab") await this.renderVocabulary();
+    if (view === "highlights") await this.renderHighlights();
+
+    document.body.focus();
+  }
+
+  _syncControls() {
+    const hasFile = !!this.currentFileName && this.sentences.length > 0;
+    if (!hasFile) {
+      this.nextBtnEl.disabled = true;
+      this.nextBtnEl.textContent = "Next";
+      return;
+    }
+    this.nextBtnEl.disabled = false;
+    this.nextBtnEl.textContent = this.isFinished ? "Finish" : "Next";
+  }
+
+  next() {
+    if (this.view !== "study") return;
+    if (!this.currentFileName || this.sentences.length === 0) return;
+
+    if (this.isFinished) {
+      alert("Finished 🎉");
+      document.body.focus();
+      return;
+    }
+
+    if (this.cursor < this.sentences.length - 1) {
+      this.cursor++;
+      this.isFinished = (this.cursor >= this.sentences.length - 1);
+      this._saveProgress();
+      this.renderStudy();
+      this._syncControls();
+    }
+
+    document.body.focus();
+  }
+
+  restart() {
+    if (this.view !== "study") return;
+    if (!this.currentFileName || this.sentences.length === 0) return;
+
+    const ok = confirm("Restart from the beginning? Your saved progress will be updated.");
+    if (!ok) return;
+
+    this.cursor = -1;
+    this.isFinished = false;
+    this._saveProgress();
+    this.renderStudy();
+    this._syncControls();
+
+    this.hintEl.textContent = `Restarted: ${this.currentFileName}. Press Next to start.`;
+    document.body.focus();
+  }
+
+  /* ---------- TTS: English sentence only ---------- */
+
+  _pickEnUSVoice() {
+    if (!("speechSynthesis" in window)) return null;
+    const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+    return voices.find(v => (v.lang || "").toLowerCase().startsWith("en-us"))
+        || voices.find(v => (v.lang || "").toLowerCase().startsWith("en"))
+        || null;
+  }
+
+  speakSentence(idx) {
+    if (!("speechSynthesis" in window)) {
+      alert("TTS is not supported in this browser.");
+      return;
+    }
+    const s = this.sentences.find(x => x.idx === idx);
+    if (!s || !s.en) return;
+
+    // Toggle stop if clicking the same sentence while speaking
+    if (window.speechSynthesis.speaking && this.currentSpeakingIdx === idx) {
+      window.speechSynthesis.cancel();
+      this.currentSpeakingIdx = null;
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const u = new SpeechSynthesisUtterance(s.en);
+    u.lang = "en-US";
+    const voice = this._pickEnUSVoice();
+    if (voice) u.voice = voice;
+    u.rate = 1.0;
+    u.pitch = 1.0;
+
+    this.currentSpeakingIdx = idx;
+
+    u.onend = () => { this.currentSpeakingIdx = null; };
+    u.onerror = () => { this.currentSpeakingIdx = null; };
+
+    window.speechSynthesis.speak(u);
+  }
+
+  renderStudy() {
+    this.appEl.innerHTML = "";
+
+    const shown = this.sentences.slice(0, this.cursor + 1);
+    const frag = document.createDocumentFragment();
+    let latestEl = null;
+
+    shown.forEach((s) => {
+      const wrap = document.createElement("div");
+      wrap.className = "sentence";
+      wrap.dataset.sentenceIdx = String(s.idx);
+      wrap.id = `sent-${s.idx}`;
+
+      const en = document.createElement("div");
+      en.className = "en";
+
+      const tokens = s.en.split(" ");
+      tokens.forEach((tok, i) => {
+        const clean = tok.replace(/[^a-zA-Z']/g, "");
+        const span = document.createElement("span");
+        span.className = "word";
+        span.textContent = tok;
+        span.dataset.word = clean;
+        en.appendChild(span);
+        if (i !== tokens.length - 1) en.appendChild(document.createTextNode(" "));
+      });
+
+      // Sentence speaker (TTS) before star
+      const speak = document.createElement("span");
+      speak.className = "speaker";
+      speak.dataset.action = "speakSentence";
+      speak.dataset.sentenceIdx = String(s.idx);
+      speak.title = "Read sentence";
+      speak.textContent = "🔊";
+
+      const sid = this._sentenceKey(this.currentFileName, s.idx);
+      const star = document.createElement("span");
+      star.className = "star";
+      star.dataset.action = "toggleSentence";
+      star.dataset.sentenceId = sid;
+      star.textContent = this.favoriteSentenceIds.has(sid) ? "★" : "☆";
+
+      en.appendChild(document.createTextNode(" "));
+      en.appendChild(speak);
+      en.appendChild(document.createTextNode(" "));
+      en.appendChild(star);
+
+      wrap.appendChild(en);
+
+      if (this.showCN) {
+        const cn = document.createElement("div");
+        cn.className = "cn";
+        cn.textContent = s.cn;
+        wrap.appendChild(cn);
+      }
+
+      frag.appendChild(wrap);
+      latestEl = wrap;
+    });
+
+    this.appEl.appendChild(frag);
+
+    // Make sure last sentence is fully visible above the bottom bar
+    if (latestEl) {
+      latestEl.scrollIntoView({ behavior: "smooth", block: "end" });
+      setTimeout(() => {
+        const barH = this.controlsBar.getBoundingClientRect().height;
+        const rect = latestEl.getBoundingClientRect();
+        const limit = window.innerHeight - barH - 8;
+        if (rect.bottom > limit) {
+          window.scrollBy({ top: rect.bottom - limit, left: 0, behavior: "smooth" });
+        }
+      }, 220);
+    }
+  }
+
+  /* ---------- Grouping helpers ---------- */
+
+  _groupByFileName(items, fileNameField = "fileName") {
+    const groups = new Map();
+    for (const it of items) {
+      const nameRaw = it?.[fileNameField];
+      const name = (nameRaw && String(nameRaw).trim()) ? String(nameRaw).trim() : "Other";
+      if (!groups.has(name)) groups.set(name, { name, items: [], newestSavedAt: 0 });
+      const g = groups.get(name);
+      g.items.push(it);
+      const t = Number(it.savedAt || 0);
+      if (t > g.newestSavedAt) g.newestSavedAt = t;
+    }
+    const arr = Array.from(groups.values());
+    arr.sort((a, b) => (b.newestSavedAt || 0) - (a.newestSavedAt || 0));
+    for (const g of arr) g.items.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+    return arr;
+  }
+
+  /* ---------- Vocabulary: CN vertical + obey Show Chinese ---------- */
+
+  async renderVocabulary() {
+    this.appEl.innerHTML = "";
+
+    const title = document.createElement("div");
+    title.className = "list-title";
+    title.textContent = "Vocabulary";
+    this.appEl.appendChild(title);
+
+    const rows = await this.db.getAll("words");
+    if (rows.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "hint";
+      empty.textContent = "No saved words yet. Save a word by tapping ☆ in the popover.";
+      this.appEl.appendChild(empty);
+      return;
+    }
+
+    const groups = this._groupByFileName(rows, "fileName");
+    const frag = document.createDocumentFragment();
+
+    for (const g of groups) {
+      const groupEl = document.createElement("div");
+      groupEl.className = "group";
+
+      const head = document.createElement("div");
+      head.className = "group-head";
+
+      const name = document.createElement("div");
+      name.className = "group-name";
+      name.textContent = `${g.name} (${g.items.length})`;
+
+      const actions = document.createElement("div");
+      actions.className = "group-actions";
+
+      const delAll = document.createElement("button");
+      delAll.className = "small-btn";
+      delAll.textContent = "Delete All";
+      delAll.dataset.action = "deleteWordGroup";
+      delAll.dataset.groupName = g.name;
+
+      actions.appendChild(delAll);
+      head.appendChild(name);
+      head.appendChild(actions);
+
+      groupEl.appendChild(head);
+
+      for (const r of g.items) {
+        const item = document.createElement("div");
+        item.className = "list-item";
+
+        const enLine = document.createElement("div");
+        enLine.className = "en";
+
+        const w = document.createElement("span");
+        w.className = "word";
+        w.textContent = r.word;
+        w.dataset.word = r.word;
+
+        const star = document.createElement("span");
+        star.className = "star";
+        star.dataset.action = "toggleWord";
+        star.dataset.word = r.word;
+        star.textContent = "★";
+
+        enLine.appendChild(w);
+        enLine.appendChild(document.createTextNode(" "));
+        enLine.appendChild(star);
+
+        item.appendChild(enLine);
+
+        if (this.showCN && r.zh) {
+          const cn = document.createElement("div");
+          cn.className = "cn";
+          cn.textContent = r.zh;
+          item.appendChild(cn);
+        }
+
+        groupEl.appendChild(item);
+      }
+
+      frag.appendChild(groupEl);
+    }
+
+    this.appEl.appendChild(frag);
+  }
+
+  /* ---------- Highlights: clickable jump back to Study (same file only) ---------- */
+
+  async renderHighlights() {
+    this.appEl.innerHTML = "";
+
+    const title = document.createElement("div");
+    title.className = "list-title";
+    title.textContent = "Highlights";
+    this.appEl.appendChild(title);
+
+    const rows = await this.db.getAll("sentences");
+    if (rows.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "hint";
+      empty.textContent = "No saved sentences yet. Save a sentence by tapping ☆ at the end of a line.";
+      this.appEl.appendChild(empty);
+      return;
+    }
+
+    const groups = this._groupByFileName(rows, "fileName");
+    const frag = document.createDocumentFragment();
+
+    for (const g of groups) {
+      const groupEl = document.createElement("div");
+      groupEl.className = "group";
+
+      const head = document.createElement("div");
+      head.className = "group-head";
+
+      const name = document.createElement("div");
+      name.className = "group-name";
+      name.textContent = `${g.name} (${g.items.length})`;
+
+      const actions = document.createElement("div");
+      actions.className = "group-actions";
+
+      const delAll = document.createElement("button");
+      delAll.className = "small-btn";
+      delAll.textContent = "Delete All";
+      delAll.dataset.action = "deleteHighlightGroup";
+      delAll.dataset.groupName = g.name;
+
+      actions.appendChild(delAll);
+      head.appendChild(name);
+      head.appendChild(actions);
+
+      groupEl.appendChild(head);
+
+      for (const r of g.items) {
+        const item = document.createElement("div");
+        item.className = "list-item clickable";
+        item.dataset.action = "jumpHighlight";
+        item.dataset.fileName = r.fileName || "";
+        item.dataset.idx = String(r.idx ?? "");
+        item.title = r.fileName ? "Click to jump (requires the same file loaded)" : "No source file (Other)";
+
+        const enLine = document.createElement("div");
+        enLine.className = "en";
+        enLine.textContent = r.en;
+
+        const star = document.createElement("span");
+        star.className = "star";
+        star.dataset.action = "toggleSentence";
+        star.dataset.sentenceId = r.id;
+        star.textContent = "★";
+
+        enLine.appendChild(document.createTextNode(" "));
+        enLine.appendChild(star);
+        item.appendChild(enLine);
+
+        if (this.showCN) {
+          const cn = document.createElement("div");
+          cn.className = "cn";
+          cn.textContent = r.cn;
+          item.appendChild(cn);
+        }
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        meta.textContent = `Source: ${r.fileName || "Other"}`;
+        item.appendChild(meta);
+
+        groupEl.appendChild(item);
+      }
+
+      frag.appendChild(groupEl);
+    }
+
+    this.appEl.appendChild(frag);
+  }
+
+  async jumpToHighlight(fileName, idxStr) {
+    const idx = Number(idxStr);
+
+    if (!fileName) {
+      alert("This highlight has no source file recorded (Other).");
+      return;
+    }
+
+    if (!this.currentFileName) {
+      alert(`Please load the file "${fileName}" first, then click the highlight again.`);
+      return;
+    }
+
+    if (this.currentFileName !== fileName) {
+      alert(
+        `Current file: ${this.currentFileName}\n` +
+        `This highlight belongs to: ${fileName}\n\n` +
+        `Please load "${fileName}" first, then click the highlight again.`
+      );
+      return;
+    }
+
+    if (!Number.isFinite(idx) || idx < 0) return;
+    if (!this.sentences || this.sentences.length === 0) return;
+
+    const maxIdx = this.sentences.length - 1;
+    const targetIdx = Math.max(0, Math.min(idx, maxIdx));
+
+    if (this.cursor < targetIdx) this.cursor = targetIdx;
+    this.isFinished = (this.cursor >= maxIdx);
+    await this._saveProgress();
+
+    await this.setView("study");
+
+    setTimeout(() => {
+      const el = document.getElementById(`sent-${targetIdx}`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("flash");
+      setTimeout(() => el.classList.remove("flash"), 2200);
+    }, 120);
+  }
+
+  /* ---------- Click handlers ---------- */
+
+  async _handleAppClick(e) {
+    const target = e.target;
+
+    // word click: show popover (study + vocab)
+    const wordEl = target.closest?.(".word");
+    if (wordEl && wordEl.dataset.word) {
+      const raw = wordEl.dataset.word;
+      const word = String(raw).trim();
+      if (word) await this.showPopover(word, wordEl);
+      return;
+    }
+
+    // action buttons / clickable items
+    const actionEl = target.closest?.("[data-action]");
+    if (!actionEl) return;
+
+    const action = actionEl.dataset.action;
+
+    if (action === "speakSentence") {
+      const idx = Number(actionEl.dataset.sentenceIdx);
+      if (Number.isFinite(idx)) this.speakSentence(idx);
+      return;
+    }
+
+    if (action === "toggleSentence") {
+      const sid = actionEl.dataset.sentenceId;
+      if (sid) await this.toggleSentenceFavorite(sid);
+      return;
+    }
+
+    if (action === "toggleWord") {
+      const w = actionEl.dataset.word;
+      if (w) await this.toggleWordFavorite(w);
+      return;
+    }
+
+    if (action === "deleteWordGroup") {
+      const groupName = actionEl.dataset.groupName || "Other";
+      await this.deleteWordGroup(groupName);
+      return;
+    }
+
+    if (action === "deleteHighlightGroup") {
+      const groupName = actionEl.dataset.groupName || "Other";
+      await this.deleteHighlightGroup(groupName);
+      return;
+    }
+
+    if (action === "jumpHighlight") {
+      const fileName = actionEl.dataset.fileName || "";
+      const idxStr = actionEl.dataset.idx || "";
+      await this.jumpToHighlight(fileName, idxStr);
+      return;
+    }
+  }
+
+  async _handlePopoverClick(e) {
+    const actionEl = e.target.closest?.("[data-pop-action]");
+    if (!actionEl) return;
+
+    const action = actionEl.dataset.popAction;
+
+    if (action === "toggleWord") {
+      if (this.currentPopoverWord) await this.toggleWordFavorite(this.currentPopoverWord);
+      return;
+    }
+
+    if (action === "playUS") {
+      const url = this.currentPopoverData?.audioUS || "";
+      if (url) this.dict.playAudio(url);
+      return;
+    }
+  }
+
+  /* ---------- Popover ---------- */
+
+  async showPopover(word, anchorEl) {
+    const w = this.dict.normalize(word);
+    if (!w) return;
+
+    this.currentPopoverWord = w;
+    this.currentPopoverData = null;
+
+    const saved = this.favoriteWords.has(w);
+    this.popoverEl.innerHTML = `
+      <h4>${escapeHtml(w)} <span class="star" data-pop-action="toggleWord">${saved ? "★" : "☆"}</span></h4>
+      <div class="loading">Loading...</div>
+    `;
+    this._positionPopover(anchorEl);
+    this.popoverEl.style.display = "block";
+
+    const data = await this.dict.lookup(w);
+    this.currentPopoverData = data;
+
+    const savedNow = this.favoriteWords.has(w);
+    const starChar = savedNow ? "★" : "☆";
+    const ipa = data?.ipaUS ? escapeHtml(data.ipaUS) : "";
+    const hasUSAudio = !!(data?.audioUS);
+
+    const zhList = Array.isArray(data?.zhList) ? data.zhList : [];
+    const zhHtml = zhList.length ? zhList.map(escapeHtml).join("<br>") : (data?.zh ? escapeHtml(data.zh) : "-");
+
+    this.popoverEl.innerHTML = `
+      <h4>${escapeHtml(w)} <span class="star" data-pop-action="toggleWord">${starChar}</span></h4>
+      <div class="ipa-line">
+        <span>${ipa}</span>
+        <span class="speaker ${hasUSAudio ? "" : "disabled"}" data-pop-action="playUS" title="Play US pronunciation">🔊</span>
+      </div>
+      <div class="cn-def">${zhHtml}</div>
+    `;
+
+    this._positionPopover(anchorEl, true);
+  }
+
+  hidePopover() {
+    this.popoverEl.style.display = "none";
+    this.currentPopoverWord = null;
+    this.currentPopoverData = null;
+  }
+
+  _positionPopover(anchorEl, clamp = false) {
+    const r = anchorEl.getBoundingClientRect();
+    const x0 = r.left + window.scrollX;
+    const y0 = r.bottom + window.scrollY + 8;
+
+    this.popoverEl.style.left = `${x0}px`;
+    this.popoverEl.style.top = `${y0}px`;
+
+    if (!clamp) return;
+
+    const pr = this.popoverEl.getBoundingClientRect();
+    const margin = 10;
+
+    let left = x0;
+    let top = y0;
+
+    if (pr.right > window.innerWidth - margin) {
+      left = window.scrollX + window.innerWidth - pr.width - margin;
+    }
+    if (left < window.scrollX + margin) left = window.scrollX + margin;
+
+    if (pr.bottom > window.scrollY + window.innerHeight - margin) {
+      top = (r.top + window.scrollY) - pr.height - 8;
+    }
+    if (top < window.scrollY + margin) top = window.scrollY + margin;
+
+    this.popoverEl.style.left = `${left}px`;
+    this.popoverEl.style.top = `${top}px`;
+  }
+
+  /* ---------- Favorites ---------- */
+
+  async toggleWordFavorite(word) {
+    const w = this.dict.normalize(word);
+    if (!w) return;
+
+    const isSaved = this.favoriteWords.has(w);
+
+    if (isSaved) {
+      await this.db.del("words", w);
+      this.favoriteWords.delete(w);
+    } else {
+      const data = (this.currentPopoverWord === w && this.currentPopoverData)
+        ? this.currentPopoverData
+        : await this.dict.lookup(w);
+
+      const zhText = data?.zh || "";
+
+      await this.db.put("words", {
+        word: w,
+        fileName: this.currentFileName || null,
+        zh: zhText,
+        ipaUS: data?.ipaUS || "",
+        audioUS: data?.audioUS || "",
+        savedAt: Date.now()
+      });
+      this.favoriteWords.add(w);
+    }
+
+    // update popover star if open
+    if (this.currentPopoverWord === w && this.popoverEl.style.display === "block") {
+      const star = this.popoverEl.querySelector('[data-pop-action="toggleWord"]');
+      if (star) star.textContent = this.favoriteWords.has(w) ? "★" : "☆";
+    }
+
+    if (this.view === "vocab") await this.renderVocabulary();
+  }
+
+  async toggleSentenceFavorite(sentenceId) {
+    if (!sentenceId) return;
+
+    const isSaved = this.favoriteSentenceIds.has(sentenceId);
+
+    if (isSaved) {
+      await this.db.del("sentences", sentenceId);
+      this.favoriteSentenceIds.delete(sentenceId);
+    } else {
+      const [fileName, idxStr] = sentenceId.split("::");
+      const idx = Number(idxStr);
+      const s = this.sentences.find(x => x.idx === idx);
+      if (!s) return;
+
+      await this.db.put("sentences", {
+        id: sentenceId,
+        fileName,
+        idx,
+        en: s.en,
+        cn: s.cn,
+        savedAt: Date.now()
+      });
+      this.favoriteSentenceIds.add(sentenceId);
+    }
+
+    if (this.view === "study") this.renderStudy();
+    if (this.view === "highlights") await this.renderHighlights();
+  }
+
+  /* ---------- Group delete ---------- */
+
+  async deleteWordGroup(groupName) {
+    const all = await this.db.getAll("words");
+    const target = (groupName === "Other")
+      ? all.filter(x => !x.fileName)
+      : all.filter(x => x.fileName === groupName);
+
+    if (target.length === 0) return;
+
+    const ok = confirm(`Delete ALL ${target.length} words in group "${groupName}"? This cannot be undone.`);
+    if (!ok) return;
+
+    const keys = target.map(x => x.word);
+    await this.db.bulkDelete("words", keys);
+    keys.forEach(k => this.favoriteWords.delete(k));
+
+    if (this.view === "vocab") await this.renderVocabulary();
+  }
+
+  async deleteHighlightGroup(groupName) {
+    const all = await this.db.getAll("sentences");
+    const target = (groupName === "Other")
+      ? all.filter(x => !x.fileName)
+      : all.filter(x => x.fileName === groupName);
+
+    if (target.length === 0) return;
+
+    const ok = confirm(`Delete ALL ${target.length} highlights in group "${groupName}"? This cannot be undone.`);
+    if (!ok) return;
+
+    const keys = target.map(x => x.id);
+    await this.db.bulkDelete("sentences", keys);
+    keys.forEach(k => this.favoriteSentenceIds.delete(k));
+
+    if (this.view === "highlights") await this.renderHighlights();
+    if (this.view === "study") this.renderStudy();
+  }
+}
+
+/* Helpers */
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
+}
+
+/* Boot */
+const App = new MovieEnglishApp();
+App.init();
+</script>
+</body>
+</html>
