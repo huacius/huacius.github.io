@@ -1521,48 +1521,51 @@ class MovieEnglishApp {
 
     // Actions (stars, group delete, sentence TTS, jump)
     const actionEl = target.closest?.("[data-action]");
-    if (!actionEl) return;
-
-    const action = actionEl.dataset.action;
-
-    if (action === "playSentence") {
-      const idx = Number(actionEl.dataset.idx);
-      const s = this.sentences.find(x => x.idx === idx);
-      if (s?.en) {
-        this.stopAuto();
-        await this.speaker.speak(s.en);
+    if (actionEl) {
+      const action = actionEl.dataset.action;
+    
+      if (action === "playSentence") {
+        const idx = Number(actionEl.dataset.idx);
+        const s = this.sentences.find(x => x.idx === idx);
+        if (s?.en) {
+          this.stopAuto();
+          await this.speaker.speak(s.en);
+        }
+        return;
       }
-      return;
-    }
-
-    if (action === "toggleSentence") {
-      const sid = actionEl.dataset.sentenceId;
-      if (sid) await this.toggleSentenceFavorite(sid);
-      return;
-    }
-
-    if (action === "toggleWord") {
-      const w = actionEl.dataset.word;
-      if (w) await this.toggleWordFavorite(w);
-      return;
-    }
-
-    if (action === "deleteWordGroup") {
-      const groupName = actionEl.dataset.groupName || "Other";
-      await this.deleteWordGroup(groupName);
-      return;
-    }
-
-    if (action === "deleteHighlightGroup") {
-      const groupName = actionEl.dataset.groupName || "Other";
-      await this.deleteHighlightGroup(groupName);
-      return;
-    }
-
-    if (action === "jumpToSentence") {
-      const fileName = String(actionEl.dataset.fileName || "").trim();
-      const idx = Number(actionEl.dataset.idx);
-      await this.jumpToSentenceIfPossible(fileName, idx);
+    
+      if (action === "toggleSentence") {
+        const sid = actionEl.dataset.sentenceId;
+        if (sid) await this.toggleSentenceFavorite(sid);
+        return;
+      }
+    
+      if (action === "toggleWord") {
+        const w = actionEl.dataset.word;
+        if (w) await this.toggleWordFavorite(w);
+        return;
+      }
+    
+      if (action === "deleteWordGroup") {
+        const groupName = actionEl.dataset.groupName || "Other";
+        await this.deleteWordGroup(groupName);
+        return;
+      }
+    
+      if (action === "deleteHighlightGroup") {
+        const groupName = actionEl.dataset.groupName || "Other";
+        await this.deleteHighlightGroup(groupName);
+        return;
+      }
+    
+      if (action === "jumpToSentence") {
+        const fileName = String(actionEl.dataset.fileName || "").trim();
+        const idx = Number(actionEl.dataset.idx);
+        await this.jumpToSentenceIfPossible(fileName, idx);
+        return;
+      }
+    
+      // 命中 data-action 后，结束
       return;
     }
 
