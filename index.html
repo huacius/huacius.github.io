@@ -935,6 +935,11 @@ class MovieEnglishApp {
     this._syncControls();
     this._syncRestartVisibility();
 
+    requestAnimationFrame(() => {
+      try { this.fileInputEl.blur(); } catch {}
+      document.body.focus();
+    });
+
     // Avoid leaving focus on the file input (space key issue)
     try { this.fileInputEl.blur(); } catch {}
     document.body.focus();
