@@ -894,6 +894,48 @@ class MovieEnglishApp {
     // Delegation
     this.appEl.addEventListener("click", (e) => this._handleAppClick(e));
     this.popoverEl.addEventListener("click", (e) => this._handlePopoverClick(e));
+
+    this.appEl.addEventListener("click", (e) => {
+      if (this.view !== "study") return;
+    
+      const target = e.target;
+    
+      // 排除强交互元素
+      if (
+        target.closest(
+          ".word, .speaker-inline, .speaker, .star, button, a, input, label"
+        )
+      ) return;
+    
+      // 排除 Popover
+      if (this.popoverEl.contains(target)) return;
+    
+      // 当前显示的最后一句
+      const shownCount = this.cursor + 1;
+      if (shownCount <= 0) return;
+    
+      const lastIdx = this.sentences[shownCount - 1]?.idx;
+      if (lastIdx === undefined) return;
+    
+      const lastEl = document.getElementById(`sent-${lastIdx}`);
+      if (!lastEl) return;
+    
+      // 只允许点击“最后一句下面的空白”
+      const rect = lastEl.getBoundingClientRect();
+      const clickY = e.clientY;
+      if (clickY <= rect.bottom + 6) return;
+    
+      // ✅ 极轻反馈（120ms，不影响阅读）
+      lastEl.classList.add("tap-feedback");
+      setTimeout(() => {
+        lastEl.classList.remove("tap-feedback");
+      }, 120);
+    
+      // Next
+      this.onNextClicked();
+    });
+
+ 
   }
 
   _bindGlobal() {
@@ -1120,10 +1162,9 @@ class MovieEnglishApp {
       // Save progress in background
       this._saveProgress();
 
-      this.renderStudy();
+      this.renderStudy({ autoScroll: true });
       this._syncControls();
       this._syncRestartVisibility();
-      this.renderStudy({ autoScroll: true });
       return true;
     }
 
