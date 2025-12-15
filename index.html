@@ -59,11 +59,15 @@
     /* underline only for English sentence line */
     .sentence.flash .en {
       text-decoration-line: underline;
-      text-decoration-thickness: 2px;
+      text-decoration-thickness: 0.75px;
       text-decoration-color: #22c55e;
-      text-underline-offset: 6px;
+      text-underline-offset: 4px;
     }
-    
+
+    .sentence.marked .en {
+      text-decoration-skip-ink: auto;
+    }
+
     @keyframes flash-bg {
       0% {
         background: rgba(34,197,94,0.00);
