@@ -669,6 +669,7 @@ class DictionaryService {
     // Translate the word itself
     add(await this._translateToZh(wordLower));
 
+    /* sengo
     // Translate a few dictionary definitions to get richer CN meanings
     const defs = Array.isArray(englishDefinitions) ? englishDefinitions : [];
     const picked = [];
@@ -686,7 +687,8 @@ class DictionaryService {
     for (const d of picked) {
       add(await this._translateToZh(d));
     }
-
+    */
+    
     return Array.from(zhSet);
   }
 
@@ -712,7 +714,7 @@ class DictionaryService {
         if (!t) continue;
         if (t.toLowerCase() === q.toLowerCase()) continue;
         out.push(t);
-        if (out.length >= 6) break;
+        if (out.length >= 20) break;
       }
 
       // Deduplicate while preserving order
